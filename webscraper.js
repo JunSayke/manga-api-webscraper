@@ -1,4 +1,5 @@
 // https://www.youtube.com/watch?v=-ZMwRnxIxZY
+// TODO: Cloudflare protection bypass (although I haven't encountered it yet)
 const axios = require("axios")
 const cheerio = require("cheerio")
 
@@ -117,6 +118,63 @@ async function searchMangas(mangaTitle, startPage = 1, endPage = 1) {
 	return searchResults
 }
 
+// NOTE: Manga details in mangakakalot seems to have a different domain chapmanganato.to
+async function getMangaChapters(mangaUrl) {
+	try {
+		const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)]
+		const response = await axios.get(mangaUrl, {
+			headers: { "User-Agent": userAgent },
+		})
+		const $ = cheerio.load(response.data)
+		const chapters = []
+
+		$("ul.row-content-chapter li.a-h").each(function () {
+			const chapterTitle = $(this).find("a.chapter-name").text()
+			const chapterLink = $(this).find("a.chapter-name").attr("href")
+			const chapterDate = $(this).find("span.chapter-time").attr("title")
+
+			chapters.push({
+				title: chapterTitle,
+				link: chapterLink,
+				date: chapterDate,
+			})
+		})
+
+		return chapters
+	} catch (error) {
+		console.error(`Error fetching manga chapters:`, error.message)
+	}
+}
+
+// NOTE: Manga content in mangakakalot seems to have a different domain chapmanganato.to
+// TODO: When trying to access the image url directly, it seems to be blocked? Puppeteer dependency?
+// TODO: How to handle image server switching? Puppeteer dependency?
+async function getChapterContent(chapterUrl) {
+	try {
+		const userAgent = userAgents[Math.floor(Math.random() * userAgents.length)]
+		const response = await axios.get(chapterUrl, {
+			headers: { "User-Agent": userAgent },
+		})
+		const $ = cheerio.load(response.data)
+		const images = []
+
+		$("div.container-chapter-reader img").each(function () {
+			const imageUrl = $(this).attr("src")
+			images.push(imageUrl)
+		})
+
+		return images
+	} catch (error) {
+		console.error(`Error fetching chapter content:`, error.message)
+	}
+}
+
 // Example usage
-searchMangas("isekai", 1, 2).then((results) => console.log(results))
 // getLatest(1, 1).then(results => console.log(results))
+// searchMangas("isekai", 1, 1).then((results) => console.log(results))
+// getMangaChapters("https://chapmanganato.to/manga-ja986557").then((chapters) =>
+// 	console.log(chapters)
+// )
+getChapterContent("https://chapmanganato.to/manga-ja986557/chapter-12").then(
+	(images) => console.log(images)
+)
