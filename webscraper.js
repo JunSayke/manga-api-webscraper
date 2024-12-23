@@ -1,5 +1,6 @@
 // https://www.youtube.com/watch?v=-ZMwRnxIxZY
 // TODO: Cloudflare protection bypass (although I haven't encountered it yet)
+// TODO: Refactor urls parameter to be more dynamic instead of using the actual url
 const axios = require("axios")
 const cheerio = require("cheerio")
 
@@ -147,7 +148,7 @@ async function getMangaChapters(mangaUrl) {
 }
 
 // NOTE: Manga content in mangakakalot seems to have a different domain chapmanganato.to
-// TODO: When trying to access the image url directly, it seems to be blocked? Puppeteer dependency?
+// TODO: When trying to access the image url directly, it seems to be blocked? altho it works fine when the referer is the manga page. Maybe get it somehow through the developer tools source? Or find a way to serve it with the correct referer?
 // TODO: How to handle image server switching? Puppeteer dependency?
 async function getChapterContent(chapterUrl) {
 	try {
