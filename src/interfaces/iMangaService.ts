@@ -8,6 +8,7 @@ interface IMangaService {
 	getGenreFilters(): string[]
 	getTotalMangaCount(): Promise<number>
 	getMangasByTitle(title: string, maxResults?: number): Promise<Manga[]>
+	// Some mangas have multiple genres, so we should be able to search by multiple genres but but other services may not support multiple genres
 	getMangasByGenres(genres: string[], maxResults?: number): Promise<Manga[]>
 	getMangasByStatus(status: string, maxResults?: number): Promise<Manga[]>
 	getSimilarMangas(mangaId: string, maxResults?: number): Promise<Manga[]>

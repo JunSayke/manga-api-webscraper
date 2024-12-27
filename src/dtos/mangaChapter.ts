@@ -1,7 +1,9 @@
 interface MangaChapter {
 	id: string
 	title: string
-	images: string[]
+	link: string
+	date: Date
+	images: string[] | null // Null when fetching only for chapter info and not the chapter content itself
 }
 
 export default MangaChapter

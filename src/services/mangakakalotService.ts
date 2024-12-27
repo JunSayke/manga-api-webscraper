@@ -4,7 +4,13 @@ import Manga from "../dtos/manga"
 import MangaChapter from "../dtos/mangaChapter"
 
 class MangakakalotService extends BaseMangaService {
-	private domain = "https://mangakakalot.com"
+	constructor() {
+		super("https://mangakakalot.com")
+	}
+
+	public getLatestMangas(maxResults?: number): Promise<Manga[]> {
+		throw new Error("Method not implemented.")
+	}
 
 	constructQuery(
 		type: string = "latest",
@@ -12,7 +18,7 @@ class MangakakalotService extends BaseMangaService {
 		state: string = "all",
 		page: number = 1
 	): string {
-		const query = `${this.domain}/manga_list?type=${type}&category=${category}&state=${state}&page=${page}`
+		const query = `${this.baseUrl}/manga_list?type=${type}&category=${category}&state=${state}&page=${page}`
 		return query
 	}
 }
