@@ -1,4 +1,4 @@
-interface MangaChapter {
+interface IMangaChapter {
 	id: string
 	title: string
 	link: string
@@ -6,4 +6,4 @@ interface MangaChapter {
 	images: string[] | null // Null when fetching only for chapter info and not the chapter content itself
 }
 
-export default MangaChapter
+export default IMangaChapter

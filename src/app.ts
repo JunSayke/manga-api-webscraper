@@ -1,5 +1,5 @@
 import express from "express"
-import router from "./routes/mangaRoute"
+import router from "./routes/mangakakalotRoute"
 import rotateUserAgent from "./middlewares/rotateUserAgent"
 const app = express()
 

@@ -1,24 +1,22 @@
 import axios from "axios"
-import cheerio, { CheerioAPI } from "cheerio"
-import Manga from "../dtos/manga"
-import MangaChapter from "../dtos/mangaChapter"
+import IManga from "../interfaces/iManga"
+import IMangaChapter from "../interfaces/iMangaChapter"
 import IMangaService from "../interfaces/iMangaService"
 import AdmZip from "adm-zip"
-import ISelectorHandler from "../interfaces/iSelectorHandler"
 
 class BaseMangaService implements IMangaService {
 	protected baseUrl: string
 
 	// These selectors are used to scrape the website
+	// Altho the urls must be provided by the implementation
 	// Manga list page selectors
-	protected mangasContainerSelector: string = ""
-	protected mangaContainerSelector: string = ""
+	protected mangaContainerSelector: string = "" // Most likely a <li> tag
 
 	// Manga info page selectors
-	protected mangaIdSelector: string = ""
+	protected mangaIdSelector: string = "" // Most likely a part of the URL or <a> tag link
 	protected mangaTitleSelector: string = ""
 	protected mangaLinkSelector: string = ""
-	protected mangaSynopsisSelector: string = ""
+	protected mangaSynopsisSelector: string = "" // Some websites may have a separate page for the synopsis
 	protected mangaThumbnailSelector: string = ""
 	protected mangaGenresSelector: string = ""
 	protected mangaStatusSelector: string = ""
@@ -26,18 +24,14 @@ class BaseMangaService implements IMangaService {
 	protected mangaViewsSelector: string = ""
 
 	// Chapter list page selectors
-	protected chaptersContainerSelector: string = ""
-	protected chapterContainerSelector: string = ""
+	protected chapterContainerSelector: string = "" // Most likely a <li> tag
 
 	// Manga chapter page selectors
-	protected mangaChapterIdSelector: string = ""
+	protected mangaChapterIdSelector: string = "" // Most likely a part of the URL or <a> tag link
 	protected mangaChapterTitleSelector: string = ""
 	protected mangaChapterLinkSelector: string = ""
 	protected mangaChapterDateSelector: string = ""
-
-	// Manga chapter images page selectors
-	protected mangaChapterImagesContainerSelector: string = ""
-	protected mangaChapterImagesSelector: string = ""
+	protected mangaChapterImagesSelector: string = "" // Most likely an <img> tag
 
 	constructor(baseUrl: string) {
 		this.baseUrl = baseUrl
@@ -51,7 +45,7 @@ class BaseMangaService implements IMangaService {
 	}
 
 	// Utilize this method for making GET requests as it uses the headers returned by getRequestHeaders
-	protected async fetchData<T>(
+	protected async fetch<T>(
 		url: string,
 		config?: Record<string, any>
 	): Promise<T> {
@@ -67,27 +61,13 @@ class BaseMangaService implements IMangaService {
 	protected async downloadImagesAsZip(imageUrls: string[]): Promise<Buffer> {
 		const zip = new AdmZip()
 		for (const imageUrl of imageUrls) {
-			const response = await this.fetchData<Buffer>(imageUrl, {
+			const response = await this.fetch<Buffer>(imageUrl, {
 				responseType: "arraybuffer",
 			})
 			const imageName = imageUrl.split("/").pop() || "image.jpg"
 			zip.addFile(imageName, response)
 		}
 		return zip.toBuffer()
-	}
-
-	// Utilize this method for web scraping as it uses cheerio to parse the HTML
-	protected async webScrape(
-		url: string,
-		selectors: Record<string, ISelectorHandler>
-	): Promise<void> {
-		const response = await this.fetchData<string>(url)
-		const $: CheerioAPI = cheerio.load(response)
-
-		for (const { selector, handler } of Object.values(selectors)) {
-			const element = $(selector)
-			handler(element)
-		}
 	}
 
 	public getKeywordFilters(): string[] {
@@ -99,44 +79,44 @@ class BaseMangaService implements IMangaService {
 	public getGenreFilters(): string[] {
 		throw new Error("Method not implemented.")
 	}
-	public getTotalMangaCount(): Promise<number> {
+	public async getTotalMangaCount(): Promise<number> {
 		throw new Error("Method not implemented.")
 	}
-	public getMangasByTitle(
+	public async getMangasByTitle(
 		title: string,
 		maxResults?: number
-	): Promise<Manga[]> {
+	): Promise<IManga[]> {
 		throw new Error("Method not implemented.")
 	}
-	public getMangasByGenres(
+	public async getMangasByGenres(
 		genres: string[],
 		maxResults?: number
-	): Promise<Manga[]> {
+	): Promise<IManga[]> {
 		throw new Error("Method not implemented.")
 	}
-	public getMangasByStatus(
+	public async getMangasByStatus(
 		status: string,
 		maxResults?: number
-	): Promise<Manga[]> {
+	): Promise<IManga[]> {
 		throw new Error("Method not implemented.")
 	}
 	// Maybe utilize https://www.anime-planet.com/ recommendations system?
-	public getSimilarMangas(
+	public async getSimilarMangas(
 		mangaId: string,
 		maxResults?: number
-	): Promise<Manga[]> {
+	): Promise<IManga[]> {
 		throw new Error("Method not implemented.")
 	}
-	public getLatestMangas(maxResults?: number): Promise<Manga[]> {
+	public async getLatestMangas(maxResults?: number): Promise<IManga[]> {
 		throw new Error("Method not implemented.")
 	}
-	public getMangaInfo(mangaId: string): Promise<Manga> {
+	public async getMangaInfo(mangaId: string): Promise<IManga> {
 		throw new Error("Method not implemented.")
 	}
-	public getMangaChapterImages(
+	public async getMangaChapterImages(
 		mangaId: string,
 		chapterId: string
-	): Promise<MangaChapter[]> {
+	): Promise<IMangaChapter[]> {
 		throw new Error("Method not implemented.")
 	}
 }
