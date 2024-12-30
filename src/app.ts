@@ -1,10 +1,10 @@
 import express from "express"
-import router from "./routes/mangakakalotRoute"
+import router from "./routes/baseRoute"
 import rotateUserAgent from "./middlewares/rotateUserAgent"
 const app = express()
 
 // TODO: Setup middleware, routes, and other configurations here
-app.use(rotateUserAgent)
+// app.use(rotateUserAgent) // commentout because the request headers should be set not on the endpoint but to the cheerio request
 app.use(router)
 
 export default app

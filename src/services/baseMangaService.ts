@@ -3,6 +3,7 @@ import IManga from "../interfaces/iManga"
 import IMangaChapter from "../interfaces/iMangaChapter"
 import IMangaService from "../interfaces/iMangaService"
 import AdmZip from "adm-zip"
+import RotateUserAgentMixin from "../mixins/RotateUserAgentMixin"
 
 class BaseMangaService implements IMangaService {
 	protected baseUrl: string
@@ -121,4 +122,4 @@ class BaseMangaService implements IMangaService {
 	}
 }
 
-export default BaseMangaService
+export default RotateUserAgentMixin(BaseMangaService)
