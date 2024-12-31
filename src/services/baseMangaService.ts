@@ -4,8 +4,14 @@ import IMangaChapter from "../interfaces/iMangaChapter"
 import IMangaService from "../interfaces/iMangaService"
 import AdmZip from "adm-zip"
 import RotateUserAgentMixin from "../mixins/RotateUserAgentMixin"
+import applyMixins from "../mixins/applyMixins"
 
-class BaseMangaService implements IMangaService {
+abstract class BaseMixin {}
+
+interface BaseMixin extends RotateUserAgentMixin {}
+applyMixins(BaseMixin, [RotateUserAgentMixin])
+
+class BaseMangaService extends BaseMixin implements IMangaService {
 	protected baseUrl: string
 
 	// These selectors are used to scrape the website
@@ -35,14 +41,9 @@ class BaseMangaService implements IMangaService {
 	protected mangaChapterImagesSelector: string = "" // Most likely an <img> tag
 
 	constructor(baseUrl: string) {
+		super()
 		this.baseUrl = baseUrl
-	}
-
-	// Override this method to provide custom headers
-	protected getRequestHeaders(): Record<string, string> {
-		return {
-			Referer: this.baseUrl,
-		}
+		this.requestHeaders["Referer"] = baseUrl
 	}
 
 	// Utilize this method for making GET requests as it uses the headers returned by getRequestHeaders
@@ -122,4 +123,4 @@ class BaseMangaService implements IMangaService {
 	}
 }
 
-export default RotateUserAgentMixin(BaseMangaService)
+export default BaseMangaService

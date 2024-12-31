@@ -12,3 +12,5 @@ function applyMixins(derivedCtor: any, constructors: any[]) {
 		})
 	})
 }
+
+export default applyMixins
