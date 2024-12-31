@@ -8,14 +8,30 @@
 // 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
 // ]
 
-// function RotateUserAgentMixin<TBase extends Constructor>(Base: TBase) {
-// 	return class extends Base {
-// 		getRequestHeaders(): Record<string, string> {
+// function RotateUserAgentMixin<TBase extends Constructor>(Base?: TBase) {
+// 	// Default base class if none is provided
+// 	const baseClass =
+// 		Base ||
+// 		class {
+// 			constructor() {
+// 				// Default constructor for the case when no base class is provided
+// 			}
+// 		}
+
+// 	return class RotateUserAgentMixin extends baseClass {
+// 		protected requestHeaders: Record<string, string> = {}
+
+// 		constructor(...args: any[]) {
+// 			super(...args)
+// 			console.log("Rotate User Agent Mixin Constructor")
+// 		}
+
+// 		protected getRequestHeaders(): Record<string, string> {
 // 			const randomUserAgent =
 // 				userAgents[Math.floor(Math.random() * userAgents.length)]
-// 			const headers = Base.prototype.getRequestHeaders.call(this)
+// 			console.log("Rotate User Agent: ", this.requestHeaders)
 // 			return {
-// 				...headers,
+// 				...this.requestHeaders,
 // 				"User-Agent": randomUserAgent,
 // 			}
 // 		}
@@ -34,6 +50,10 @@ const userAgents = [
 
 class RotateUserAgentMixin {
 	protected requestHeaders: Record<string, string> = {}
+
+	constructor() {
+		console.log("Rotate User Agent Mixin Constructor")
+	}
 
 	protected getRequestHeaders(): Record<string, string> {
 		const randomUserAgent =
