@@ -1,4 +1,4 @@
-import IMangaService from "../interfaces/iMangaService"
+import IMangaService from "../interfaces/IMangaService"
 import MangahubService from "../services/mangahubService"
 import MangakakalotService from "../services/mangakakalotService"
 import NhentaiService from "../services/nhentaiService"
@@ -7,8 +7,8 @@ import NhentaiService from "../services/nhentaiService"
 // Maybe define it in a JSON file and load it dynamically?
 const services: Record<string, IMangaService> = {
 	mangakakalot: new MangakakalotService(),
-	mangahub: new MangahubService(),
-	nhentai: new NhentaiService(),
+	// mangahub: new MangahubService(),
+	// nhentai: new NhentaiService(),
 	// Add other services here
 }
 

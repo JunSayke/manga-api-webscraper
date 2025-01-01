@@ -1,5 +1,5 @@
-import IManga from "./iManga"
-import IMangaChapter from "./iMangaChapter"
+import IManga from "./IManga"
+import IMangaChapter from "./IMangaChapter"
 
 // This interface defines the methods that a manga service should implement
 interface IMangaService {

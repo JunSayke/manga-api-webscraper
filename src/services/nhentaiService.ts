@@ -1,7 +1,7 @@
 // Encapsulate the business logic and data fetching/manipulation
 import BaseMangaService from "./baseMangaService"
-import IManga from "../interfaces/iManga"
-import IMangaChapter from "../interfaces/iMangaChapter"
+import IManga from "../interfaces/IManga"
+import IMangaChapter from "../interfaces/IMangaChapter"
 import { AnyNode } from "domhandler"
 import MangaDto from "../dtos/mangaDto"
 import puppeteer from "puppeteer"
@@ -22,23 +22,21 @@ class NHentaiService extends BaseMangaService {
 	}
 
 	private searchQuery(
-        searchQuery: string,
-        sort: string = "all-time" // sort by popularity: default to all-time
+		searchQuery: string,
+		sort: string = "all-time" // sort by popularity: default to all-time
 	) {
 		const query = `${this.baseUrl}/search/?q=${searchQuery}&sort=${sort}`
 		return query
 	}
 
-    // https://nhentai.net/?page=2
-	private latestQuery(
-        page: number,
-	) {
+	// https://nhentai.net/?page=2
+	private latestQuery(page: number) {
 		const query = `${this.baseUrl}/?page=${page}`
 		return query
 	}
 
 	private extractPageNumber(url: string): number {
-        const match = url.match(/page\/(\d+)/)
+		const match = url.match(/page\/(\d+)/)
 		return match ? parseInt(match[1], 10) : 1
 	}
 
@@ -49,9 +47,9 @@ class NHentaiService extends BaseMangaService {
 	}
 
 	// TODO: What's the best way to extract the manga ID from the URL? or does it even matter?
-    // https://mangahub.io/manga/tales-of-demons-and-gods
+	// https://mangahub.io/manga/tales-of-demons-and-gods
 	private extractMangaId(url: string): string {
-        const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
+		const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
 		return match ? match[1] : ""
 	}
 
@@ -61,34 +59,61 @@ class NHentaiService extends BaseMangaService {
 
 		let query = this.latestQuery(page)
 
-        const browser = await puppeteer.launch({ headless: true });
-        const queryPage = await browser.newPage();
-        await queryPage.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36');
+		const browser = await puppeteer.launch({ headless: true })
+		const queryPage = await browser.newPage()
+		await queryPage.setUserAgent(
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36"
+		)
 
 		while (mangaList.length < maxResults) {
-            await queryPage.goto(query, { waitUntil: 'load' });
-            
-            // TODO make into reusable function
-			const mangas = await queryPage.evaluate((baseUrl, mangaContainerSelector, mangaTitleSelector, mangaIdSelector, mangaThumbnailSelector) => {
-				return Array.from(document.querySelectorAll(mangaContainerSelector)).map(manga => {
-					return {
-						id: manga.querySelector(mangaIdSelector)?.getAttribute("href")?.split("/")[2] || "",
-						title: manga.querySelector(mangaTitleSelector)?.textContent || "",
-						link: baseUrl + manga.querySelector(mangaIdSelector)?.getAttribute("href") || "",
-						synopsis: null,
-						thumbnailUrl: manga.querySelector(mangaThumbnailSelector)?.getAttribute("src") || "",
-						genres: null,
-						status: null,
-						rating: null,
-						views: null,
-						chapters: null
-					};
-				});
-			}, this.baseUrl, this.mangaContainerSelector, this.mangaTitleSelector, this.mangaIdSelector, this.mangaThumbnailSelector);
+			await queryPage.goto(query, { waitUntil: "load" })
 
-			mangas.forEach(manga => {
-                mangaList.push(manga)
-            });
+			// TODO make into reusable function
+			const mangas = await queryPage.evaluate(
+				(
+					baseUrl,
+					mangaContainerSelector,
+					mangaTitleSelector,
+					mangaIdSelector,
+					mangaThumbnailSelector
+				) => {
+					return Array.from(
+						document.querySelectorAll(mangaContainerSelector)
+					).map((manga) => {
+						return {
+							id:
+								manga
+									.querySelector(mangaIdSelector)
+									?.getAttribute("href")
+									?.split("/")[2] || "",
+							title: manga.querySelector(mangaTitleSelector)?.textContent || "",
+							link:
+								baseUrl +
+									manga.querySelector(mangaIdSelector)?.getAttribute("href") ||
+								"",
+							synopsis: null,
+							thumbnailUrl:
+								manga
+									.querySelector(mangaThumbnailSelector)
+									?.getAttribute("src") || "",
+							genres: null,
+							status: null,
+							rating: null,
+							views: null,
+							chapters: null,
+						}
+					})
+				},
+				this.baseUrl,
+				this.mangaContainerSelector,
+				this.mangaTitleSelector,
+				this.mangaIdSelector,
+				this.mangaThumbnailSelector
+			)
+
+			mangas.forEach((manga) => {
+				mangaList.push(manga)
+			})
 
 			if (mangaList.length >= maxResults) {
 				break

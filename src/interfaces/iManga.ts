@@ -1,4 +1,4 @@
-import IMangaChapter from "./iMangaChapter"
+import IMangaChapter from "./IMangaChapter"
 
 interface IManga {
 	id: string // Does this even matter knowing that the manga ID is mostly a part of the URL?

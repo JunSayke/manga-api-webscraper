@@ -73,7 +73,7 @@ export const getLatestMangas = async (req: Request, res: Response) => {
 		)
 		res.json(mangas)
 	} catch (error: any) {
-		res.status(500).send("Error fetching latest mangas: " + error.message)
+		res.status(500).send("Error fetching latest mangas: " + error.stack)
 	}
 }
 

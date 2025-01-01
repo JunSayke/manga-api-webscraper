@@ -1,5 +1,5 @@
-import IManga from "../interfaces/iManga"
-import IMangaChapter from "../interfaces/iMangaChapter"
+import IManga from "../interfaces/IManga"
+import IMangaChapter from "../interfaces/IMangaChapter"
 
 class MangaDto implements IManga {
 	id: string

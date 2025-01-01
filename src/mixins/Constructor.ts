@@ -7,6 +7,9 @@
 // https://stackoverflow.com/questions/72897219/is-there-a-wasy-to-emulate-super-with-mixins-in-typescript
 
 // Apply a constraint to the Constructor type to ensure that it is a class of some type.
-type Constructor = new (...args: any[]) => {}
+// This is a standard constructor that also allows abstract classes.
+type Constructor<T = {}> =
+	| (new (...args: any[]) => T)
+	| (abstract new (...args: any[]) => T)
 
 export default Constructor

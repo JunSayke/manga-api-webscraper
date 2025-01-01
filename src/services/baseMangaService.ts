@@ -1,52 +1,19 @@
-import axios from "axios"
-import IManga from "../interfaces/iManga"
-import IMangaChapter from "../interfaces/iMangaChapter"
-import IMangaService from "../interfaces/iMangaService"
-import AdmZip from "adm-zip"
-import RotateUserAgentMixin from "../mixins/RotateUserAgentMixin"
-import applyMixins from "../mixins/applyMixins"
-import SimpleWebscraperMixin from "../mixins/SimpleWebscraperMixin"
+import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
+import IManga from "../interfaces/IManga"
+import IMangaChapter from "../interfaces/IMangaChapter"
+import IMangaService from "../interfaces/IMangaService"
+import IExtractionRule from "../utils/IExtractionRule"
 
-abstract class BaseMixin {
-	constructor() {}
-}
-
-interface BaseMixin extends RotateUserAgentMixin, SimpleWebscraperMixin {}
-applyMixins(BaseMixin, [RotateUserAgentMixin, SimpleWebscraperMixin])
-
-class BaseMangaService extends BaseMixin implements IMangaService {
+class BaseMangaService implements IMangaService {
 	protected baseUrl: string
+	protected webScraper: IWebscraper
+	protected rules: Record<string, IExtractionRule>
 
-	constructor(baseUrl: string) {
-		super()
+	constructor(baseUrl: string, webScraper: IWebscraper) {
 		this.baseUrl = baseUrl
+		this.webScraper = webScraper
+		this.rules = {}
 		console.log("BaseMangaService Constructor")
-	}
-
-	// Utilize this method for making GET requests as it uses the headers returned by getRequestHeaders
-	protected async fetch<T>(
-		url: string,
-		config?: Record<string, any>
-	): Promise<T> {
-		const defaultConfig = {
-			headers: this.getRequestHeaders(),
-		}
-		const finalConfig = { ...defaultConfig, ...config }
-		const response = await axios.get<T>(url, finalConfig)
-		return response.data
-	}
-
-	// Some resources may block requests due to unauthorized referer headers etc
-	protected async downloadImagesAsZip(imageUrls: string[]): Promise<Buffer> {
-		const zip = new AdmZip()
-		for (const imageUrl of imageUrls) {
-			const response = await this.fetch<Buffer>(imageUrl, {
-				responseType: "arraybuffer",
-			})
-			const imageName = imageUrl.split("/").pop() || "image.jpg"
-			zip.addFile(imageName, response)
-		}
-		return zip.toBuffer()
 	}
 
 	public getKeywordFilters(): string[] {
