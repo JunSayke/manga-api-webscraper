@@ -1,7 +1,24 @@
-// main entry point
-import app from "./app"
-const port = process.env.PORT || 3000
+import BrowserManager from "./services/browserManagerService";
+import app from "./app";
+
+const port = process.env.PORT || 3000;
+
+(async () => {
+    try {
+        const browserManager = BrowserManager.getInstance();
+        await browserManager.initializeBrowser();
+        console.log("Browser initialized successfully");
+    } catch (err) {
+        console.error("Failed to initialize the browser:", err);
+    }
+})();
 
 app.listen(port, () => {
-	console.log(`Server is running on http://localhost:${port}`)
-})
+    console.log(`Server is running on http://localhost:${port}`);
+});
+
+process.on('SIGTERM', async () => {
+    const browserManager = BrowserManager.getInstance();
+    await browserManager.closeBrowser();
+    process.exit(0);
+});

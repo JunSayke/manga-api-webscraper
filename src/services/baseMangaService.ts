@@ -4,6 +4,7 @@ import IMangaChapter from "../interfaces/iMangaChapter"
 import IMangaService from "../interfaces/iMangaService"
 import AdmZip from "adm-zip"
 import RotateUserAgentMixin from "../mixins/RotateUserAgentMixin"
+import { ParsedQs } from "qs"
 
 class BaseMangaService implements IMangaService {
 	protected baseUrl: string
@@ -120,6 +121,11 @@ class BaseMangaService implements IMangaService {
 	): Promise<IMangaChapter[]> {
 		throw new Error("Method not implemented.")
 	}
+	public async searchMangas(
+        query: ParsedQs
+    ): Promise<IManga[]> {
+        throw new Error("Method not implemented.")
+    }
 }
 
 export default RotateUserAgentMixin(BaseMangaService)
