@@ -6,6 +6,7 @@ import AdmZip from "adm-zip"
 import RotateUserAgentMixin from "../mixins/RotateUserAgentMixin"
 import applyMixins from "../mixins/applyMixins"
 import SimpleWebscraperMixin from "../mixins/SimpleWebscraperMixin"
+import { ParsedQs } from "qs"
 
 abstract class BaseMixin {
 	constructor() {}
@@ -98,6 +99,11 @@ class BaseMangaService extends BaseMixin implements IMangaService {
 	): Promise<IMangaChapter[]> {
 		throw new Error("Method not implemented.")
 	}
+	public async searchMangas(
+        query: ParsedQs
+    ): Promise<IManga[]> {
+        throw new Error("Method not implemented.")
+    }
 }
 
 export default BaseMangaService

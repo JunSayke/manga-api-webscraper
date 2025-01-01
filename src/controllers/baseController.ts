@@ -105,3 +105,16 @@ export const getMangaChapterImages = async (req: Request, res: Response) => {
 			.send("Error fetching manga chapter images: " + error.message)
 	}
 }
+
+export const searchMangas = async (req: Request, res: Response) => {
+    const { service } = req.params
+    try {
+        const mangaService = serviceFactory(service as string)
+        const mangas = await mangaService.searchMangas(
+            req.query,
+        )
+        res.json(mangas)
+    } catch (error: any) {
+        res.status(500).send("Error searching mangas: " + error.message)
+    }
+}

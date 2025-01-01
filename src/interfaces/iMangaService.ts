@@ -1,5 +1,6 @@
 import IManga from "./iManga"
 import IMangaChapter from "./iMangaChapter"
+import { ParsedQs } from "qs"
 
 // This interface defines the methods that a manga service should implement
 interface IMangaService {
@@ -18,6 +19,9 @@ interface IMangaService {
 		mangaId: string,
 		chapterId: string
 	): Promise<IMangaChapter[]>
+	searchMangas(
+        query: ParsedQs
+    ): Promise<IManga[]>
 }
 
 export default IMangaService
