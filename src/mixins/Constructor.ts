@@ -6,6 +6,7 @@
 // In the case of a super call
 // https://stackoverflow.com/questions/72897219/is-there-a-wasy-to-emulate-super-with-mixins-in-typescript
 
+// Apply a constraint to the Constructor type to ensure that it is a class of some type.
 type Constructor = new (...args: any[]) => {}
 
 export default Constructor
