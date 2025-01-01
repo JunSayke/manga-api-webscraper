@@ -9,7 +9,7 @@ class MangakakalotService extends BaseMangaService {
 	constructor() {
 		super("https://mangakakalot.com", new CheerioWebscraper())
 
-		this.rules["mangaList"] = new CheerioExtractionRule(
+		this.rules["mangaList"] = this.webScraper.createExtractionRule(
 			"mangaList",
 			"div.list-truyen-item-wrap",
 			(el) => {
@@ -31,27 +31,27 @@ class MangakakalotService extends BaseMangaService {
 			}
 		)
 
-		this.rules["mangaListId"] = new CheerioExtractionRule(
+		this.rules["mangaListId"] = this.webScraper.createExtractionRule(
 			"id",
 			"a.list-story-item",
-			(el) => el.attr("href")
+			(el) => this.extractMangaId(el.attr("href"))
 		)
-		this.rules["mangaListTitle"] = new CheerioExtractionRule(
+		this.rules["mangaListTitle"] = this.webScraper.createExtractionRule(
 			"title",
 			"a.list-story-item",
 			(el) => el.attr("title")
 		)
-		this.rules["mangaListLink"] = new CheerioExtractionRule(
+		this.rules["mangaListLink"] = this.webScraper.createExtractionRule(
 			"link",
 			"a.list-story-item",
 			(el) => el.attr("href")
 		)
-		this.rules["mangaListThumbnail"] = new CheerioExtractionRule(
+		this.rules["mangaListThumbnail"] = this.webScraper.createExtractionRule(
 			"thumbnailUrl",
 			"a.list-story-item > img",
 			(el) => el.attr("src")
 		)
-		this.rules["mangaListViews"] = new CheerioExtractionRule(
+		this.rules["mangaListViews"] = this.webScraper.createExtractionRule(
 			"views",
 			"span.aye_icon",
 			(el) =>
@@ -72,6 +72,13 @@ class MangakakalotService extends BaseMangaService {
 	) {
 		const query = `${this.baseUrl}/manga_list?type=${type}&category=${category}&state=${state}&page=${page}`
 		return query
+	}
+
+	// TODO: What's the best way to extract the manga ID from the URL? or does it even matter?
+	// https://mangahub.io/manga/tales-of-demons-and-gods
+	private extractMangaId(url: string): string {
+		const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
+		return match ? match[1] : ""
 	}
 
 	private extractPageNumber(url: string): number {

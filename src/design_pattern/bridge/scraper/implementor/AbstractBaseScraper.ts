@@ -1,5 +1,7 @@
+import { AnyNode } from "domhandler"
 import IExtractionRule from "../../../../utils/IExtractionRule"
 import IWebscraper from "../IWebscraper"
+import { Cheerio } from "cheerio"
 
 abstract class AbstractBaseScraper implements IWebscraper {
 	public fetchContent(url: string): Promise<string> {
@@ -7,6 +9,14 @@ abstract class AbstractBaseScraper implements IWebscraper {
 	}
 
 	public querySelector(content: string, selector: string): any[] {
+		throw new Error("Method not implemented.")
+	}
+
+	public createExtractionRule(
+		name: string,
+		selector: string,
+		transform: (el: any) => any
+	): IExtractionRule {
 		throw new Error("Method not implemented.")
 	}
 

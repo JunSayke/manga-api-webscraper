@@ -2,6 +2,8 @@ import * as cheerio from "cheerio"
 import axios from "axios"
 import { AnyNode } from "domhandler"
 import AbstractBaseScraper from "./AbstractBaseScraper"
+import IExtractionRule from "../../../../utils/IExtractionRule"
+import CheerioExtractionRule from "../../../../utils/CheerioExtractionRule"
 
 class CheerioWebscraper extends AbstractBaseScraper {
 	public async fetchContent(url: string): Promise<string> {
@@ -17,6 +19,14 @@ class CheerioWebscraper extends AbstractBaseScraper {
 		return $(selector)
 			.toArray()
 			.map((el) => $(el))
+	}
+
+	public createExtractionRule(
+		name: string,
+		selector: string,
+		transform: (el: cheerio.Cheerio<AnyNode>) => any
+	): IExtractionRule {
+		return new CheerioExtractionRule(name, selector, transform)
 	}
 }
 
