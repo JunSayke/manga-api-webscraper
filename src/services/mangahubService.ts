@@ -15,11 +15,6 @@ class MangahubService extends AbstractBaseMangaService {
 		super(url, webscraper)
 
 		this.mangaListRules["container"].selector = "div._1KYcM.col-sm-6.col-xs-12"
-		this.mangaListRules["id"].selector = "a[href*='/manga/']"
-		this.mangaListRules["id"].extract = async (el: IElementHandler) => {
-			const href = await el.attr("href")
-			return href?.split("/").pop() || ""
-		}
 		this.mangaListRules["title"].selector = "a[href*='/manga/']"
 		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
 			await el.attr("title")

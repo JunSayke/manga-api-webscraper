@@ -1,11 +1,10 @@
 import MangaChapter from "./MangaChapter"
 
 type Manga = {
-	id: string // Does this even matter knowing that the manga ID is mostly a part of the URL?
+	id: string // An link, optionally encrypted
 	title: string
-	link: string
 	synopsis: string | null // Null if not available
-	thumbnailUrl: string
+	thumbnailUrl: string | null // Null if not available
 	genres: string[] | null // Null when fetching only for manga info and not the manga content itself
 	status: string | null // Null if not available
 	rating: number | null // Null if not available

@@ -81,10 +81,7 @@ interface IMangaService {
 	 * @param chapterId - The ID of the chapter.
 	 * @returns A promise that resolves to an array of MangaChapter objects.
 	 */
-	getMangaChapterImages(
-		mangaId: string,
-		chapterId: string
-	): Promise<MangaChapter[]>
+	getMangaChapterImages(chapterId: string): Promise<MangaChapter[]>
 }
 
 export default IMangaService

@@ -12,15 +12,10 @@ class NHentaiService extends AbstractBaseMangaService {
 		super(url, webscraper)
 		this.mangaListRules["container"].selector =
 			".container.index-container:not(.index-popular) > div.gallery"
-		this.mangaListRules["id"].selector = `a[href*="/g/"]`
-		this.mangaListRules["id"].extract = async (el: IElementHandler) => {
-			const href = await el.attr("href")
-			return href?.split("/")[2] || ""
-		}
 		this.mangaListRules["title"].selector = `div.gallery > a > div.caption`
 		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
 			await el.text()
-		this.mangaListRules["link"].selector = this.mangaListRules["id"].selector
+		this.mangaListRules["link"].selector = `a[href*="/g/"]`
 		this.mangaListRules["link"].extract = async (el: IElementHandler) => {
 			const href = await el.attr("href")
 			return this.baseUrl + href

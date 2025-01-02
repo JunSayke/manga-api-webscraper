@@ -12,9 +12,6 @@ class MangakakalotService extends AbstractBaseMangaService {
 		super(url, webscraper)
 
 		this.mangaListRules["container"].selector = "div.list-truyen-item-wrap"
-		this.mangaListRules["id"].selector = "a.list-story-item"
-		this.mangaListRules["id"].extract = async (el: IElementHandler) =>
-			this.extractMangaId((await el.attr("href")) ?? "")
 		this.mangaListRules["title"].selector = "a.list-story-item"
 		this.mangaListRules["title"].extract =
 			async (el: IElementHandler) => async (el: IElementHandler) =>

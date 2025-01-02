@@ -92,14 +92,11 @@ export const getMangaInfo = async (req: Request, res: Response) => {
 }
 
 export const getMangaChapterImages = async (req: Request, res: Response) => {
-	const { mangaId, chapterId } = req.query
+	const { chapterId } = req.query
 	const { service } = req.params
 	try {
 		const mangaService = serviceFactory(service as string)
-		const images = await mangaService.getMangaChapterImages(
-			mangaId as string,
-			chapterId as string
-		)
+		const images = await mangaService.getMangaChapterImages(chapterId as string)
 		res.json(images)
 	} catch (error: any) {
 		res

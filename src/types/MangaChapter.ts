@@ -1,7 +1,6 @@
 type MangaChapter = {
-	id: string
+	id: string // An link, optionally encrypted
 	title: string
-	link: string
 	date: Date | null // Null when fetching only for chapter info and not the chapter content itself
 	images: string[] | null // Null when fetching only for chapter info and not the chapter content itself
 }
