@@ -20,8 +20,25 @@ class PuppeteerElementAdapter implements IElementHandler {
 	}
 
 	public async find(selector: string): Promise<IElementHandler | null> {
+		if (!selector) {
+			return null
+		}
+
 		const childElement = await this.element.$(selector)
+		console.log(selector, childElement)
+
 		return childElement ? new PuppeteerElementAdapter(childElement) : null
+	}
+
+	public async findAll(selector: string): Promise<IElementHandler[]> {
+		if (!selector) {
+			return []
+		}
+
+		const childElements = await this.element.$$(selector)
+		return childElements.map(
+			(childElement) => new PuppeteerElementAdapter(childElement)
+		)
 	}
 }
 

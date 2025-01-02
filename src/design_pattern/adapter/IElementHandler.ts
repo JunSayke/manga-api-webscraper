@@ -4,6 +4,7 @@ interface IElementHandler {
 	attr(name: string): Promise<string | null>
 	text(): Promise<string>
 	find(selector: string): Promise<IElementHandler | null>
+	findAll(selector: string): Promise<IElementHandler[]>
 	// Add more methods as needed
 }
 

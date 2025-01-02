@@ -1,6 +1,6 @@
-import IMangaChapter from "./IMangaChapter"
+import MangaChapter from "./MangaChapter"
 
-interface IManga {
+type Manga = {
 	id: string // Does this even matter knowing that the manga ID is mostly a part of the URL?
 	title: string
 	link: string
@@ -10,7 +10,7 @@ interface IManga {
 	status: string | null // Null if not available
 	rating: number | null // Null if not available
 	views: number | null // Null if not available
-	chapters: IMangaChapter[] | null // Null when fetching only for manga info and not the manga content itself
+	chapters: MangaChapter[] | null // Null when fetching only for manga info and not the manga content itself
 }
 
-export default IManga
+export default Manga

@@ -1,12 +1,12 @@
 // Encapsulate the business logic and data fetching/manipulation
-import BaseMangaService from "./baseMangaService"
+import AbstractBaseMangaService from "./AbstractBaseMangaService"
 import IManga from "../interfaces/IManga"
 import IMangaChapter from "../interfaces/IMangaChapter"
 import { AnyNode } from "domhandler"
 import MangaDto from "../dtos/mangaDto"
 import puppeteer from "puppeteer"
 
-class NHentaiService extends BaseMangaService {
+class NHentaiService extends AbstractBaseMangaService {
 	constructor() {
 		super("https://nhentai.net")
 		this.mangaContainerSelector = "div.container.index-container"

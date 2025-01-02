@@ -1,48 +1,42 @@
 // Encapsulate the business logic and data fetching/manipulation
-import { ParsedQs } from "qs"
-import IManga from "../interfaces/IManga"
-import BrowserManager from "../manager/browserManager"
-import { PageManager } from "../manager/browserPageManager"
-import BaseMangaService from "./baseMangaService"
-import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
-import MangaDto from "../dtos/mangaDto"
 import { ElementHandle } from "puppeteer"
+import { ParsedQs } from "qs"
+import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
+import Manga from "../types/Manga"
+import AbstractBaseMangaService from "./AbstractBaseMangaService"
+import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 
-class MangahubService extends BaseMangaService {
-	constructor() {
-		super("https://mangahub.io", new PuppeteerWebscraper())
+class MangahubService extends AbstractBaseMangaService {
+	constructor(
+		url: string = "https://mangahub.io",
+		webscraper: IWebscraper = new PuppeteerWebscraper()
+	) {
+		super(url, webscraper)
 
-		this.rules["mangaList"] = this.webScraper.createExtractionRule(
-			"mangaList",
-			"div._1KYcM.col-sm-6.col-xs-12",
-			async (el: ElementHandle) => {
-				const manga = new MangaDto()
-				manga.id = await el.$eval(
-					`a[href*="/manga/"]`,
-					(el) => el.getAttribute("href")?.split("/").pop() || ""
-				)
-				manga.title = await el.$eval(
-					`a[href*="/manga/"]`,
-					(el) => el.getAttribute("title") || ""
-				)
-				manga.link = await el.$eval(
-					`a[href*="/manga/"]`,
-					(el) => el.getAttribute("href") || ""
-				)
-				manga.thumbnailUrl = await el.$eval(
-					`div.media-left > a > img`,
-					(el) => el.getAttribute("src") || ""
-				)
-				manga.genres = await el.$$eval("a.label.genre-label", (els) =>
-					els.map((el) => el.textContent || "")
-				)
-				manga.status = await el.$eval(
-					"div.media-body span",
-					(el) => el.textContent?.match(/\(([^)]+)\)/)?.[1] || ""
-				)
-				return manga
-			}
-		)
+		this.mangaListRules["container"].selector = "div._1KYcM.col-sm-6.col-xs-12"
+		this.mangaListRules["id"].selector = "a[href*='/manga/']"
+		this.mangaListRules["id"].extract = async (el: IElementHandler) => {
+			const href = await el.attr("href")
+			return href?.split("/").pop() || ""
+		}
+		this.mangaListRules["title"].selector = "a[href*='/manga/']"
+		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
+			await el.attr("title")
+		this.mangaListRules["link"].selector = "a[href*='/manga/']"
+		this.mangaListRules["link"].extract = async (el: IElementHandler) =>
+			await el.attr("href")
+		this.mangaListRules["thumbnail"].selector = "div.media-left > a > img"
+		this.mangaListRules["thumbnail"].extract = async (el: IElementHandler) =>
+			await el.attr("src")
+		this.mangaListRules["genres"].selector = "a.label.genre-label"
+		this.mangaListRules["genres"].extract = async (el: IElementHandler) =>
+			await el.text()
+		this.mangaListRules["status"].selector = "div.media-body span"
+		this.mangaListRules["status"].extract = async (el: IElementHandler) => {
+			const text = await el.text()
+			return text.match(/\(([^)]+)\)/)?.[1] || ""
+		}
 	}
 
 	private constructQuery({
@@ -83,59 +77,42 @@ class MangahubService extends BaseMangaService {
 		return match ? parseInt(match[1], 10) : 1
 	}
 
-	private nextPageHandler(url: string): string {
+	protected nextPageHandler(url: string): string {
 		const pageNumber = this.extractPageNumber(url)
 		const nextPageNumber = pageNumber + 1
 		return url.replace(/page\/\d+/, `page/${nextPageNumber}`)
 	}
 
-	public async getLatestMangas(maxResults: number = 10): Promise<IManga[]> {
-		const mangaList: IManga[] = []
-		let page = 1
-
-		let query = this.constructQuery({ order: "LATEST", page })
-
-		while (mangaList.length < maxResults) {
-			await this.webScraper.loadPage(query)
-			const result = await this.webScraper.scrape([this.rules["mangaList"]])
-			const mangas = result["mangaList"]
-			mangaList.push(...mangas)
-
-			this.webScraper.cleanup()
-			if (mangas.length === 0) break
-			page++
-			query = this.nextPageHandler(query)
-		}
-
-		return mangaList.slice(0, maxResults)
+	protected getLatestMangasInitialQuery(): string {
+		return this.constructQuery({ order: "LATEST", page: 1 })
 	}
 
-	public async searchMangas(query: ParsedQs): Promise<IManga[]> {
-		const mangaList: IManga[] = []
-		let { limit } = query
-		if (!limit) {
-			limit = "50"
-		}
-		let queryString = this.constructQuery(query)
+	// public async searchMangas(query: ParsedQs): Promise<Manga[]> {
+	// 	const mangaList: Manga[] = []
+	// 	let { limit } = query
+	// 	if (!limit) {
+	// 		limit = "50"
+	// 	}
+	// 	let queryString = this.constructQuery(query)
 
-		while (mangaList.length < Number(limit)) {
-			await this.webScraper.loadPage(queryString)
-			const result = await this.webScraper.scrape([this.rules["mangaList"]])
-			const mangas = result["mangaList"]
-			mangaList.push(...mangas)
+	// 	while (mangaList.length < Number(limit)) {
+	// 		await this.webScraper.loadPage(queryString)
+	// 		const result = await this.webScraper.scrape([this.rules["mangaList"]])
+	// 		const mangas = result["mangaList"]
+	// 		mangaList.push(...mangas)
 
-			this.webScraper.cleanup()
-			if (mangas.length === 0) break
-			queryString = this.nextPageHandler(queryString)
-		}
+	// 		this.webScraper.cleanup()
+	// 		if (mangas.length === 0) break
+	// 		queryString = this.nextPageHandler(queryString)
+	// 	}
 
-		return mangaList.slice(0, Number(limit))
-	}
+	// 	return mangaList.slice(0, Number(limit))
+	// }
 
 	public async getMangasByGenres(
 		genres: string[],
 		maxResults: number = 10
-	): Promise<IManga[]> {
+	): Promise<Manga[]> {
 		throw new Error("Method not implemented.")
 	}
 

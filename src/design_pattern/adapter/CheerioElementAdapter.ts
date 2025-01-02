@@ -23,6 +23,14 @@ class CheerioElementAdapter implements IElementHandler {
 			? new CheerioElementAdapter(childElement)
 			: null
 	}
+
+	public async findAll(selector: string): Promise<IElementHandler[]> {
+		const childElements = this.element.find(selector).toArray()
+		return childElements.map(
+			(childElement) =>
+				new CheerioElementAdapter(this.element.constructor(childElement))
+		)
+	}
 }
 
 export default CheerioElementAdapter

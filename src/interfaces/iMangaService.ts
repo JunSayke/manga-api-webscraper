@@ -1,5 +1,5 @@
-import IManga from "./IManga"
-import IMangaChapter from "./IMangaChapter"
+import Manga from "../types/Manga"
+import MangaChapter from "../types/MangaChapter"
 
 // This interface defines the methods that a manga service should implement
 interface IMangaService {
@@ -7,17 +7,17 @@ interface IMangaService {
 	getStatusFilters(): string[]
 	getGenreFilters(): string[]
 	getTotalMangaCount(): Promise<number>
-	getMangasByTitle(title: string, maxResults?: number): Promise<IManga[]>
+	getMangasByTitle(title: string, maxResults?: number): Promise<Manga[]>
 	// Some mangas have multiple genres, so we should be able to search by multiple genres but but other services may not support multiple genres
-	getMangasByGenres(genres: string[], maxResults?: number): Promise<IManga[]>
-	getMangasByStatus(status: string, maxResults?: number): Promise<IManga[]>
-	getSimilarMangas(mangaId: string, maxResults?: number): Promise<IManga[]>
-	getLatestMangas(maxResults?: number): Promise<IManga[]>
-	getMangaInfo(mangaId: string): Promise<IManga>
+	getMangasByGenres(genres: string[], maxResults?: number): Promise<Manga[]>
+	getMangasByStatus(status: string, maxResults?: number): Promise<Manga[]>
+	getSimilarMangas(mangaId: string, maxResults?: number): Promise<Manga[]>
+	getLatestMangas(maxResults?: number): Promise<Manga[]>
+	getMangaInfo(mangaId: string): Promise<Manga>
 	getMangaChapterImages(
 		mangaId: string,
 		chapterId: string
-	): Promise<IMangaChapter[]>
+	): Promise<MangaChapter[]>
 }
 
 export default IMangaService
