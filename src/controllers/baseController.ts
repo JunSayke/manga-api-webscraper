@@ -68,9 +68,11 @@ export const getLatestMangas = async (req: Request, res: Response) => {
 	const { service } = req.params
 	try {
 		const mangaService = serviceFactory(service as string)
+		console.time("getLatestMangas")
 		const mangas = await mangaService.getLatestMangas(
 			maxResults ? parseInt(maxResults as string) : undefined
 		)
+		console.timeEnd("getLatestMangas")
 		res.json(mangas)
 	} catch (error: any) {
 		res.status(500).send("Error fetching latest mangas: " + error.stack)
@@ -104,4 +106,18 @@ export const getMangaChapterImages = async (req: Request, res: Response) => {
 			.status(500)
 			.send("Error fetching manga chapter images: " + error.message)
 	}
+}
+
+export const searchMangas = async (req: Request, res: Response) => {
+	throw new Error("Method not implemented.")
+	// const { service } = req.params
+	// try {
+	//     const mangaService = serviceFactory(service as string)
+	//     const mangas = await mangaService.searchMangas(
+	//         req.query,
+	//     )
+	//     res.json(mangas)
+	// } catch (error: any) {
+	//     res.status(500).send("Error searching mangas: " + error.message)
+	// }
 }

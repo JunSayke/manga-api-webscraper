@@ -1,18 +1,23 @@
 // Encapsulate the business logic and data fetching/manipulation
+import { Cheerio } from "cheerio"
 import CheerioWebscraper from "../design_pattern/bridge/scraper/implementor/CheerioWebscraper"
 import MangaDto from "../dtos/mangaDto"
 import IManga from "../interfaces/IManga"
-import CheerioExtractionRule from "../utils/CheerioExtractionRule"
 import BaseMangaService from "./baseMangaService"
+import { AnyNode } from "domhandler"
+import IElementHandler from "../design_pattern/adapter/IElementHandler"
 
 class MangakakalotService extends BaseMangaService {
-	constructor() {
-		super("https://mangakakalot.com", new CheerioWebscraper())
+	constructor(
+		url: string = "https://mangakakalot.com",
+		webscraper: CheerioWebscraper = new CheerioWebscraper()
+	) {
+		super(url, webscraper)
 
 		this.rules["mangaList"] = this.webScraper.createExtractionRule(
 			"mangaList",
 			"div.list-truyen-item-wrap",
-			(el) => {
+			async (el: IElementHandler) => {
 				const idRule = this.rules["mangaListId"]
 				const titleRule = this.rules["mangaListTitle"]
 				const linkRule = this.rules["mangaListLink"]
@@ -20,13 +25,13 @@ class MangakakalotService extends BaseMangaService {
 				const viewsRule = this.rules["mangaListViews"]
 
 				const manga = new MangaDto()
-				manga.id = idRule.extract(el.find(idRule.selector))
-				manga.title = titleRule.extract(el.find(titleRule.selector))
-				manga.link = linkRule.extract(el.find(linkRule.selector))
-				manga.thumbnailUrl = thumbnailRule.extract(
-					el.find(thumbnailRule.selector)
+				manga.id = await idRule.extract(await el.find(idRule.selector))
+				manga.title = await titleRule.extract(await el.find(titleRule.selector))
+				manga.link = await linkRule.extract(await el.find(linkRule.selector))
+				manga.thumbnailUrl = await thumbnailRule.extract(
+					await el.find(thumbnailRule.selector)
 				)
-				manga.views = viewsRule.extract(el.find(viewsRule.selector))
+				manga.views = await viewsRule.extract(await el.find(viewsRule.selector))
 				return manga
 			}
 		)
@@ -34,33 +39,31 @@ class MangakakalotService extends BaseMangaService {
 		this.rules["mangaListId"] = this.webScraper.createExtractionRule(
 			"id",
 			"a.list-story-item",
-			(el) => this.extractMangaId(el.attr("href"))
+			async (el: IElementHandler) =>
+				this.extractMangaId((await el.attr("href")) ?? "")
 		)
 		this.rules["mangaListTitle"] = this.webScraper.createExtractionRule(
 			"title",
 			"a.list-story-item",
-			(el) => el.attr("title")
+			async (el: IElementHandler) => await el.attr("title")
 		)
 		this.rules["mangaListLink"] = this.webScraper.createExtractionRule(
 			"link",
 			"a.list-story-item",
-			(el) => el.attr("href")
+			async (el: IElementHandler) => await el.attr("href")
 		)
 		this.rules["mangaListThumbnail"] = this.webScraper.createExtractionRule(
 			"thumbnailUrl",
 			"a.list-story-item > img",
-			(el) => el.attr("src")
+			async (el: IElementHandler) => await el.attr("src")
 		)
 		this.rules["mangaListViews"] = this.webScraper.createExtractionRule(
 			"views",
 			"span.aye_icon",
-			(el) =>
-				parseInt(
-					el
-						.text()
-						.trim()
-						.replace(/[^0-9]/g, "")
-				)
+			async (el: IElementHandler) => {
+				const text = await el.text()
+				return parseInt(text.trim().replace(/[^0-9]/g, ""))
+			}
 		)
 	}
 
@@ -99,9 +102,8 @@ class MangakakalotService extends BaseMangaService {
 		let query = this.constructQuery("latest", "all", "all", page)
 
 		while (mangaList.length < maxResults) {
-			const result = await this.webScraper.scrape(query, [
-				this.rules["mangaList"],
-			])
+			await this.webScraper.loadPage(query)
+			const result = await this.webScraper.scrape([this.rules["mangaList"]])
 			const mangas = result["mangaList"]
 			mangaList.push(...mangas)
 

@@ -1,34 +1,81 @@
 // Encapsulate the business logic and data fetching/manipulation
-import BaseMangaService from "./baseMangaService"
+import { ParsedQs } from "qs"
 import IManga from "../interfaces/IManga"
-import IMangaChapter from "../interfaces/iMangaChapter"
-import * as cheerio from "cheerio"
-import { AnyNode } from "domhandler"
+import BrowserManager from "../manager/browserManager"
+import { PageManager } from "../manager/browserPageManager"
+import BaseMangaService from "./baseMangaService"
+import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import MangaDto from "../dtos/mangaDto"
-import puppeteer from "puppeteer"
+import { ElementHandle } from "puppeteer"
 
 class MangahubService extends BaseMangaService {
 	constructor() {
-		super("https://mangahub.io")
-		this.mangaContainerSelector = "div._1KYcM.col-sm-6.col-xs-12"
-		this.mangaIdSelector = `a[href*="/manga/"]`
-		this.mangaTitleSelector = this.mangaIdSelector
-		this.mangaLinkSelector = this.mangaIdSelector
-		this.mangaSynopsisSelector = "" // Truncated synopsis in the list page
-		this.mangaThumbnailSelector = `div.media-left > a > img`
-		this.mangaGenresSelector = "a.label.genre-label"
-		this.mangaStatusSelector = "div.media-body span"
-		this.mangaRatingSelector = "" // No rating on the list page
-		this.mangaViewsSelector = "" // No views on the list page
+		super("https://mangahub.io", new PuppeteerWebscraper())
+
+		this.rules["mangaList"] = this.webScraper.createExtractionRule(
+			"mangaList",
+			"div._1KYcM.col-sm-6.col-xs-12",
+			async (el: ElementHandle) => {
+				const manga = new MangaDto()
+				manga.id = await el.$eval(
+					`a[href*="/manga/"]`,
+					(el) => el.getAttribute("href")?.split("/").pop() || ""
+				)
+				manga.title = await el.$eval(
+					`a[href*="/manga/"]`,
+					(el) => el.getAttribute("title") || ""
+				)
+				manga.link = await el.$eval(
+					`a[href*="/manga/"]`,
+					(el) => el.getAttribute("href") || ""
+				)
+				manga.thumbnailUrl = await el.$eval(
+					`div.media-left > a > img`,
+					(el) => el.getAttribute("src") || ""
+				)
+				manga.genres = await el.$$eval("a.label.genre-label", (els) =>
+					els.map((el) => el.textContent || "")
+				)
+				manga.status = await el.$eval(
+					"div.media-body span",
+					(el) => el.textContent?.match(/\(([^)]+)\)/)?.[1] || ""
+				)
+				return manga
+			}
+		)
 	}
 
-	private constructQuery(
-		order: string = "latest",
-		genre: string = "all",
-		page: number = 1
-	) {
-		const query = `https://mangahub.io/search/page/${page}?q=&order=${order}&genre=${genre}`
-		return query
+	private constructQuery({
+		q = "",
+		order = "",
+		genre = "",
+		page = 1,
+	}: {
+		q?: string
+		order?: string
+		genre?: string
+		page?: number
+	}) {
+		// Base URL
+		let queryString = `https://mangahub.io/search/page/${page}`
+
+		// Construct query parameters
+		const queryParams = []
+		if (q) {
+			queryParams.push(`q=${q}`)
+		}
+		if (order) {
+			queryParams.push(`order=${order}`)
+		}
+		if (genre) {
+			queryParams.push(`genre=${genre}`)
+		}
+
+		if (queryParams.length > 0) {
+			queryString += `?${queryParams.join("&")}`
+		}
+
+		return queryString
 	}
 
 	private extractPageNumber(url: string): number {
@@ -42,93 +89,54 @@ class MangahubService extends BaseMangaService {
 		return url.replace(/page\/\d+/, `page/${nextPageNumber}`)
 	}
 
-	// TODO: What's the best way to extract the manga ID from the URL? or does it even matter?
-	// https://mangahub.io/manga/tales-of-demons-and-gods
-	private extractMangaId(url: string): string {
-		const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
-		return match ? match[1] : ""
-	}
-
 	public async getLatestMangas(maxResults: number = 10): Promise<IManga[]> {
 		const mangaList: IManga[] = []
 		let page = 1
 
-		let query = this.constructQuery("LATEST", "all", page)
+		let query = this.constructQuery({ order: "LATEST", page })
 
-		const browser = await puppeteer.launch({ headless: true })
-		const queryPage = await browser.newPage()
-		await queryPage.setUserAgent(
-			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36"
-		)
 		while (mangaList.length < maxResults) {
-			await queryPage.goto(query, { waitUntil: "load" })
+			await this.webScraper.loadPage(query)
+			const result = await this.webScraper.scrape([this.rules["mangaList"]])
+			const mangas = result["mangaList"]
+			mangaList.push(...mangas)
 
-			// TODO make into reusable function
-			const mangas = await queryPage.evaluate(
-				(
-					mangaContainerSelector,
-					mangaTitleSelector,
-					mangaIdSelector,
-					mangaThumbnailSelector,
-					mangaGenresSelector,
-					mangaStatusSelector
-				) => {
-					return Array.from(
-						document.querySelectorAll(mangaContainerSelector)
-					).map((manga) => {
-						return {
-							id:
-								manga
-									.querySelector(mangaIdSelector)
-									?.getAttribute("href")
-									?.split("/")
-									.pop() || "",
-							title:
-								manga
-									.querySelector(mangaTitleSelector)
-									?.getAttribute("title") || "",
-							link:
-								manga.querySelector(mangaIdSelector)?.getAttribute("href") ||
-								"",
-							synopsis: "",
-							thumbnailUrl:
-								manga
-									.querySelector(mangaThumbnailSelector)
-									?.getAttribute("src") || "",
-							genres: Array.from(
-								manga.querySelectorAll(mangaGenresSelector)
-							).map((genre) => genre.textContent || ""),
-							status:
-								manga
-									.querySelector(mangaStatusSelector)
-									?.textContent?.match(/\(([^)]+)\)/)?.[1] || "",
-							rating: null,
-							views: null,
-							chapters: null,
-						}
-					})
-				},
-				this.mangaContainerSelector,
-				this.mangaTitleSelector,
-				this.mangaIdSelector,
-				this.mangaThumbnailSelector,
-				this.mangaGenresSelector,
-				this.mangaStatusSelector
-			)
-
-			mangas.forEach((manga) => {
-				mangaList.push(manga)
-			})
-
-			if (mangaList.length >= maxResults) {
-				break
-			}
-
+			this.webScraper.cleanup()
+			if (mangas.length === 0) break
 			page++
 			query = this.nextPageHandler(query)
 		}
 
 		return mangaList.slice(0, maxResults)
+	}
+
+	public async searchMangas(query: ParsedQs): Promise<IManga[]> {
+		const mangaList: IManga[] = []
+		let { limit } = query
+		if (!limit) {
+			limit = "50"
+		}
+		let queryString = this.constructQuery(query)
+
+		while (mangaList.length < Number(limit)) {
+			await this.webScraper.loadPage(queryString)
+			const result = await this.webScraper.scrape([this.rules["mangaList"]])
+			const mangas = result["mangaList"]
+			mangaList.push(...mangas)
+
+			this.webScraper.cleanup()
+			if (mangas.length === 0) break
+			queryString = this.nextPageHandler(queryString)
+		}
+
+		return mangaList.slice(0, Number(limit))
+	}
+
+	public async getMangasByGenres(
+		genres: string[],
+		maxResults: number = 10
+	): Promise<IManga[]> {
+		throw new Error("Method not implemented.")
 	}
 
 	public getStatusFilters(): string[] {

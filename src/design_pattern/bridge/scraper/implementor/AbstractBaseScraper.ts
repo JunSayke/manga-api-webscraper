@@ -1,39 +1,37 @@
 import { AnyNode } from "domhandler"
-import IExtractionRule from "../../../../utils/IExtractionRule"
+import IExtractionRule from "./ExtractionRules/IExtractionRule"
 import IWebscraper from "../IWebscraper"
 import { Cheerio } from "cheerio"
+import IElementHandler from "../../../adapter/IElementHandler"
 
 abstract class AbstractBaseScraper implements IWebscraper {
-	public fetchContent(url: string): Promise<string> {
-		throw new Error("Method not implemented.")
-	}
+	public abstract elementAdapter: (
+		element: any,
+		...args: any[]
+	) => IElementHandler
 
-	public querySelector(content: string, selector: string): any[] {
-		throw new Error("Method not implemented.")
-	}
+	public abstract loadPage(url: string): Promise<void>
+	public abstract cleanup(): Promise<void>
+	public abstract querySelector(selector: string): Promise<any[]>
 
-	public createExtractionRule(
-		name: string,
-		selector: string,
-		transform: (el: any) => any
-	): IExtractionRule {
-		throw new Error("Method not implemented.")
-	}
-
-	public async scrape(
-		url: string,
-		rules: IExtractionRule[]
-	): Promise<Record<string, any>> {
-		const content = await this.fetchContent(url)
+	public async scrape(rules: IExtractionRule[]): Promise<Record<string, any>> {
 		const data: Record<string, any> = {}
 
 		for (const rule of rules) {
-			const elements = this.querySelector(content, rule.selector)
-			data[rule.name] = elements.map((el) => rule.extract(el))
+			const elements = await this.querySelector(rule.selector)
+			data[rule.name] = await Promise.all(
+				elements.map((el) => rule.extract(this.elementAdapter(el)))
+			)
 		}
 
 		return data
 	}
+
+	public abstract createExtractionRule(
+		name: string,
+		selector: string,
+		transform: (el: any | IElementHandler) => any
+	): IExtractionRule
 }
 
 export default AbstractBaseScraper

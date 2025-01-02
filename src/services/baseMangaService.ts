@@ -1,8 +1,8 @@
+import IExtractionRule from "../design_pattern/bridge/scraper/implementor/ExtractionRules/IExtractionRule"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import IManga from "../interfaces/IManga"
 import IMangaChapter from "../interfaces/IMangaChapter"
 import IMangaService from "../interfaces/IMangaService"
-import IExtractionRule from "../utils/IExtractionRule"
 
 class BaseMangaService implements IMangaService {
 	protected baseUrl: string
