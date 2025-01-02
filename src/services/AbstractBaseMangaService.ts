@@ -2,12 +2,19 @@ import IElementHandler from "../design_pattern/adapter/IElementHandler"
 import IExtractionRule from "../design_pattern/bridge/scraper/implementor/ExtractionRules/IExtractionRule"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import IMangaService from "../interfaces/IMangaService"
+
 import Manga from "../types/Manga"
 import MangaChapter from "../types/MangaChapter"
 
 abstract class AbstractBaseMangaService implements IMangaService {
 	protected baseUrl: string
 	protected webScraper: IWebscraper
+
+	/**
+	 * A record of extraction rules for various manga attributes.
+	 * Each key represents an attribute of the manga, and the value is an extraction rule
+	 * that defines how to extract that attribute from the HTML.
+	 */
 	protected mangaListRules: Record<string, IExtractionRule>
 
 	constructor(baseUrl: string, webScraper: IWebscraper) {
@@ -41,11 +48,13 @@ abstract class AbstractBaseMangaService implements IMangaService {
 						thumbnailUrl: await thumbnailRule.extract(
 							await el.find(thumbnailRule.selector)
 						),
-						genres: await Promise.all(
-							(
-								await el.findAll(genresRule.selector)
-							).map(async (genreEl) => await genresRule.extract(genreEl))
-						),
+						genres: genresRule.selector
+							? await Promise.all(
+									(
+										await el.findAll(genresRule.selector)
+									).map(async (genreEl) => await genresRule.extract(genreEl))
+							  )
+							: undefined,
 						status: await statusRule.extract(
 							await el.find(statusRule.selector)
 						),
@@ -148,8 +157,17 @@ abstract class AbstractBaseMangaService implements IMangaService {
 		}
 	}
 
+	/**
+	 * Handles the pagination for the next page of manga results.
+	 * @param query - The current query string.
+	 * @returns The query string for the next page.
+	 */
 	protected abstract nextPageHandler(query: string): string
 
+	/**
+	 * Retrieves the initial query string for fetching the latest mangas.
+	 * @returns The initial query string.
+	 */
 	protected abstract getLatestMangasInitialQuery(): string
 
 	public getKeywordFilters(): string[] {

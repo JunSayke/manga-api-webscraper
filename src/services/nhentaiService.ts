@@ -1,24 +1,33 @@
 // Encapsulate the business logic and data fetching/manipulation
+import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
+import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
-import IManga from "../interfaces/IManga"
-import IMangaChapter from "../interfaces/IMangaChapter"
-import { AnyNode } from "domhandler"
-import MangaDto from "../dtos/mangaDto"
-import puppeteer from "puppeteer"
 
 class NHentaiService extends AbstractBaseMangaService {
-	constructor() {
-		super("https://nhentai.net")
-		this.mangaContainerSelector = "div.container.index-container"
-		this.mangaIdSelector = `a[href*="/g/"]`
-		this.mangaTitleSelector = `div.gallery > a > div.caption`
-		this.mangaLinkSelector = this.mangaIdSelector
-		this.mangaSynopsisSelector = "" // Truncated synopsis in the list page
-		this.mangaThumbnailSelector = `div.gallery > a > img`
-		this.mangaGenresSelector = ""
-		this.mangaStatusSelector = ""
-		this.mangaRatingSelector = "" // No rating on the list page
-		this.mangaViewsSelector = "" // No views on the list page
+	constructor(
+		url: string = "https://nhentai.net",
+		webscraper: IWebscraper = new PuppeteerWebscraper()
+	) {
+		super(url, webscraper)
+		this.mangaListRules["container"].selector =
+			".container.index-container:not(.index-popular) > div.gallery"
+		this.mangaListRules["id"].selector = `a[href*="/g/"]`
+		this.mangaListRules["id"].extract = async (el: IElementHandler) => {
+			const href = await el.attr("href")
+			return href?.split("/")[2] || ""
+		}
+		this.mangaListRules["title"].selector = `div.gallery > a > div.caption`
+		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
+			await el.text()
+		this.mangaListRules["link"].selector = this.mangaListRules["id"].selector
+		this.mangaListRules["link"].extract = async (el: IElementHandler) => {
+			const href = await el.attr("href")
+			return this.baseUrl + href
+		}
+		this.mangaListRules["thumbnail"].selector = `div.gallery > a > img`
+		this.mangaListRules["thumbnail"].extract = async (el: IElementHandler) =>
+			await el.attr("src")
 	}
 
 	private searchQuery(
@@ -40,10 +49,14 @@ class NHentaiService extends AbstractBaseMangaService {
 		return match ? parseInt(match[1], 10) : 1
 	}
 
-	private nextPageHandler(url: string): string {
+	protected nextPageHandler(url: string): string {
 		const pageNumber = this.extractPageNumber(url)
 		const nextPageNumber = pageNumber + 1
 		return url.replace(/page=\d+/, `page=${nextPageNumber}`)
+	}
+
+	protected getLatestMangasInitialQuery(): string {
+		return this.latestQuery(1)
 	}
 
 	// TODO: What's the best way to extract the manga ID from the URL? or does it even matter?
@@ -51,79 +64,6 @@ class NHentaiService extends AbstractBaseMangaService {
 	private extractMangaId(url: string): string {
 		const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
 		return match ? match[1] : ""
-	}
-
-	public async getLatestMangas(maxResults: number = 10): Promise<IManga[]> {
-		const mangaList: IManga[] = []
-		let page = 1
-
-		let query = this.latestQuery(page)
-
-		const browser = await puppeteer.launch({ headless: true })
-		const queryPage = await browser.newPage()
-		await queryPage.setUserAgent(
-			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36"
-		)
-
-		while (mangaList.length < maxResults) {
-			await queryPage.goto(query, { waitUntil: "load" })
-
-			// TODO make into reusable function
-			const mangas = await queryPage.evaluate(
-				(
-					baseUrl,
-					mangaContainerSelector,
-					mangaTitleSelector,
-					mangaIdSelector,
-					mangaThumbnailSelector
-				) => {
-					return Array.from(
-						document.querySelectorAll(mangaContainerSelector)
-					).map((manga) => {
-						return {
-							id:
-								manga
-									.querySelector(mangaIdSelector)
-									?.getAttribute("href")
-									?.split("/")[2] || "",
-							title: manga.querySelector(mangaTitleSelector)?.textContent || "",
-							link:
-								baseUrl +
-									manga.querySelector(mangaIdSelector)?.getAttribute("href") ||
-								"",
-							synopsis: null,
-							thumbnailUrl:
-								manga
-									.querySelector(mangaThumbnailSelector)
-									?.getAttribute("src") || "",
-							genres: null,
-							status: null,
-							rating: null,
-							views: null,
-							chapters: null,
-						}
-					})
-				},
-				this.baseUrl,
-				this.mangaContainerSelector,
-				this.mangaTitleSelector,
-				this.mangaIdSelector,
-				this.mangaThumbnailSelector
-			)
-
-			mangas.forEach((manga) => {
-				mangaList.push(manga)
-			})
-
-			if (mangaList.length >= maxResults) {
-				break
-			}
-
-			page++
-			query = this.nextPageHandler(query)
-		}
-
-		return mangaList.slice(0, maxResults)
 	}
 
 	public getStatusFilters(): string[] {
