@@ -1,19 +1,14 @@
 import { ElementHandle, Page } from "puppeteer"
-import { PageManager } from "../../../../manager/browserPageManager"
 import BrowserManager from "../../../../manager/browserManager"
-import AbstractBaseScraper from "./AbstractBaseScraper"
-import IExtractionRule from "./ExtractionRules/IExtractionRule"
-import PuppeteerExtractionRule from "./ExtractionRules/PuppeteerExtractionRule"
+import { PageManager } from "../../../../manager/browserPageManager"
 import PuppeteerElementAdapter from "../../../adapter/PuppeteerElementAdapter"
-import IElementHandler from "../../../adapter/IElementHandler"
+import AbstractBaseScraper from "./AbstractBaseScraper"
 
 class PuppeteerWebscraper extends AbstractBaseScraper {
 	private page: Page | null = null
 
-	public elementAdapter = (
-		element: ElementHandle,
-		...args: any[]
-	): PuppeteerElementAdapter => new PuppeteerElementAdapter(element)
+	public elementAdapter = (element: ElementHandle): PuppeteerElementAdapter =>
+		new PuppeteerElementAdapter(element)
 
 	public async loadPage(url: string): Promise<void> {
 		const browser = BrowserManager.getInstance().getBrowser()
@@ -39,14 +34,6 @@ class PuppeteerWebscraper extends AbstractBaseScraper {
 
 		// Return all elements matching the selector
 		return await this.page.$$(selector)
-	}
-
-	public createExtractionRule(
-		name: string,
-		selector: string,
-		transform: (el: any | IElementHandler) => any
-	): IExtractionRule {
-		return new PuppeteerExtractionRule(name, selector, transform)
 	}
 }
 

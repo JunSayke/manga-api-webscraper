@@ -1,6 +1,10 @@
 // Define the endpoints and map them to controller functions
 import { Router, Request, Response } from "express"
-import { getLatestMangas, searchMangas } from "../controllers/baseController"
+import {
+	getLatestMangas,
+	getMangaInfo,
+	searchMangas,
+} from "../controllers/baseController"
 
 const router = Router()
 
@@ -20,5 +24,9 @@ router.get("/:service/search", searchMangas)
 // Route for getting the latest mangas
 // Sample URL: /mangakakalot/latest, throws an error if the service is not provided or if the service is not supported
 router.get("/:service/latest", getLatestMangas)
+
+// Route for getting the manga info
+// Sample URL: /manga?link=https://mangakakalot.com/manga/rj935239
+router.get("/manga", getMangaInfo)
 
 export default router

@@ -1,5 +1,5 @@
 // Encapsulate the business logic and data fetching/manipulation
-import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import INodeElement from "../design_pattern/adapter/INodeElement"
 import CheerioWebscraper from "../design_pattern/bridge/scraper/implementor/CheerioWebscraper"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
@@ -10,22 +10,79 @@ class MangakakalotService extends AbstractBaseMangaService {
 		webscraper: IWebscraper = new CheerioWebscraper()
 	) {
 		super(url, webscraper)
+		this.initMangaListRules()
+		this.initMangaDetailRules()
+	}
 
-		this.mangaListRules["container"].selector = "div.list-truyen-item-wrap"
-		this.mangaListRules["title"].selector = "a.list-story-item"
-		this.mangaListRules["title"].extract =
-			async (el: IElementHandler) => async (el: IElementHandler) =>
-				await el.attr("title")
-		this.mangaListRules["link"].selector = "a.list-story-item"
-		this.mangaListRules["link"].extract = async (el: IElementHandler) =>
-			await el.attr("href")
-		this.mangaListRules["thumbnail"].selector = "a.list-story-item > img"
-		this.mangaListRules["thumbnail"].extract = async (el: IElementHandler) =>
-			await el.attr("src")
-		this.mangaListRules["views"].selector = "span.aye_icon"
-		this.mangaListRules["views"].extract = async (el: IElementHandler) => {
+	private initMangaListRules(): void {
+		// manga list (ml) rules
+		const container = this.mangaListRules["container"]
+		const link = this.mangaListRules["link"]
+		const title = this.mangaListRules["title"]
+		const thumbnail = this.mangaListRules["thumbnail"]
+		const views = this.mangaListRules["views"]
+
+		container.selector = "div.list-truyen-item-wrap"
+		link.selector = "a.list-story-item"
+		title.selector = "a.list-story-item"
+		thumbnail.selector = "a.list-story-item > img"
+		views.selector = "span.aye_icon"
+
+		// manga list (ml) extractors
+		container.extract = async (el: INodeElement) =>
+			await el.findAll("div.list-truyen-item-wrap")
+		link.extract = async (el: INodeElement) => await el.attr("href")
+		title.extract = async (el: INodeElement) => await el.attr("title")
+		thumbnail.extract = async (el: INodeElement) => await el.attr("src")
+		views.extract = async (el: INodeElement) =>
+			parseInt((await el.text()).trim().replace(/[^0-9]/g, ""))
+	}
+
+	private initMangaDetailRules(): void {
+		// manga detail (md) rules
+		const link = this.mangaDetailRules["link"]
+		const title = this.mangaDetailRules["title"]
+		const synopsis = this.mangaDetailRules["synopsis"]
+		const thumbnail = this.mangaDetailRules["thumbnail"]
+		const genres = this.mangaDetailRules["genres"]
+		const status = this.mangaDetailRules["status"]
+		const rating = this.mangaDetailRules["rating"]
+		const views = this.mangaDetailRules["views"]
+		const chapters = this.mangaDetailRules["chapters"]
+
+		// manga detail (md) selectors
+		link.selector = "a[itemprop='item'][href*='/manga/']"
+		title.selector = "ul.manga-info-text > li > h1"
+		synopsis.selector = "div#noidungm"
+		thumbnail.selector = "div.manga-info-pic > img"
+		genres.selector = "ul.manga-info-text > li:nth-child(7) > a"
+		status.selector = "ul.manga-info-text > li:nth-child(3)"
+		rating.selector = "em#rate_row_cmd"
+		views.selector = "ul.manga-info-text > li:nth-child(6)"
+		chapters.selector = "div.chapter-list > div.row"
+
+		// manga detail (md) extractors
+		link.extract = async (el: INodeElement) => await el.attr("href")
+		title.extract = async (el: INodeElement) => await el.text()
+		synopsis.extract = async (el: INodeElement) => await el.text()
+		thumbnail.extract = async (el: INodeElement) => await el.attr("src")
+		genres.extract = async (el: INodeElement) => {
 			const text = await el.text()
-			return parseInt(text.trim().replace(/[^0-9]/g, ""))
+			return text.toLowerCase()
+		}
+		status.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			return text.match(/Status\s*:\s*(.*)/)?.[1].toLowerCase() || null
+		}
+		rating.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			const match = text.match(/rate\s*:\s*([\d.]+)/)
+			return match ? parseFloat(match[1]) : null
+		}
+		views.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			const match = text.match(/View\s*:\s*([\d,]+)/)
+			return match ? parseInt(match[1].replace(/,/g, "")) : null
 		}
 	}
 
@@ -37,13 +94,6 @@ class MangakakalotService extends AbstractBaseMangaService {
 	) {
 		const query = `${this.baseUrl}/manga_list?type=${type}&category=${category}&state=${state}&page=${page}`
 		return query
-	}
-
-	// TODO: What's the best way to extract the manga ID from the URL? or does it even matter?
-	// https://mangahub.io/manga/tales-of-demons-and-gods
-	private extractMangaId(url: string): string {
-		const match = url.match(/manga\/([a-zA-Z0-9-]+)/)
-		return match ? match[1] : ""
 	}
 
 	private extractPageNumber(url: string): number {

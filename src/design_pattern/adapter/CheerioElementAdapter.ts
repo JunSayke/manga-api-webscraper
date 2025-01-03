@@ -1,8 +1,8 @@
 import { Cheerio } from "cheerio"
 import { AnyNode } from "domhandler"
-import IElementHandler from "./IElementHandler"
+import INodeElement from "./INodeElement"
 
-class CheerioElementAdapter implements IElementHandler {
+class CheerioElementAdapter implements INodeElement {
 	private element: Cheerio<AnyNode>
 
 	constructor(element: Cheerio<AnyNode>) {
@@ -17,14 +17,14 @@ class CheerioElementAdapter implements IElementHandler {
 		return this.element.text()
 	}
 
-	public async find(selector: string): Promise<IElementHandler | null> {
+	public async find(selector: string): Promise<INodeElement | null> {
 		const childElement = this.element.find(selector)
 		return childElement.length > 0
 			? new CheerioElementAdapter(childElement)
 			: null
 	}
 
-	public async findAll(selector: string): Promise<IElementHandler[]> {
+	public async findAll(selector: string): Promise<INodeElement[]> {
 		const childElements = this.element.find(selector).toArray()
 		return childElements.map(
 			(childElement) =>

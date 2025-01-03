@@ -1,7 +1,12 @@
 // Handle the logic for each endpoint
 import { Request, Response } from "express"
-import serviceFactory from "../design_pattern/serviceFactory"
+import {
+	getServiceNameFromDomain,
+	serviceFactory,
+} from "../design_pattern/serviceFactory"
+import { URL } from "url"
 
+// TODO: Error handling
 export const getMangasByTitle = async (req: Request, res: Response) => {
 	const { title, maxResults } = req.query
 	const { service } = req.params
@@ -75,16 +80,20 @@ export const getLatestMangas = async (req: Request, res: Response) => {
 		console.timeEnd("getLatestMangas")
 		res.json(mangas)
 	} catch (error: any) {
-		res.status(500).send("Error fetching latest mangas: " + error.stack)
+		res.status(500).send("Error fetching latest mangas: " + error.message)
 	}
 }
 
 export const getMangaInfo = async (req: Request, res: Response) => {
-	const { mangaId } = req.query
-	const { service } = req.params
+	const { link } = req.query
+
 	try {
-		const mangaService = serviceFactory(service as string)
-		const manga = await mangaService.getMangaInfo(mangaId as string)
+		const url = new URL(link as string)
+		const domain = url.hostname
+		const serviceName = getServiceNameFromDomain(domain)
+
+		const mangaService = serviceFactory(serviceName!)
+		const manga = await mangaService.getMangaInfo(link as string)
 		res.json(manga)
 	} catch (error: any) {
 		res.status(500).send("Error fetching manga info: " + error.message)

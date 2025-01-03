@@ -1,20 +1,15 @@
+import axios from "axios"
 import * as cheerio from "cheerio"
 import { Cheerio } from "cheerio"
-import axios from "axios"
 import { AnyNode } from "domhandler"
-import AbstractBaseScraper from "./AbstractBaseScraper"
-import IExtractionRule from "./ExtractionRules/IExtractionRule"
-import CheerioExtractionRule from "./ExtractionRules/CheerioExtractionRule"
 import CheerioElementAdapter from "../../../adapter/CheerioElementAdapter"
-import IElementHandler from "../../../adapter/IElementHandler"
+import AbstractBaseScraper from "./AbstractBaseScraper"
 
 class CheerioWebscraper extends AbstractBaseScraper {
 	private $: cheerio.CheerioAPI | null = null
 
-	public elementAdapter = (
-		element: Cheerio<AnyNode>,
-		...args: any[]
-	): CheerioElementAdapter => new CheerioElementAdapter(element)
+	public elementAdapter = (element: Cheerio<AnyNode>): CheerioElementAdapter =>
+		new CheerioElementAdapter(element)
 
 	public async loadPage(url: string): Promise<void> {
 		const response = await axios.get<string>(url)
@@ -34,14 +29,6 @@ class CheerioWebscraper extends AbstractBaseScraper {
 		return this.$(selector)
 			.toArray()
 			.map((el) => this.$!(el))
-	}
-
-	public createExtractionRule(
-		name: string,
-		selector: string,
-		transform: (el: any | IElementHandler) => any
-	): IExtractionRule {
-		return new CheerioExtractionRule(name, selector, transform)
 	}
 }
 

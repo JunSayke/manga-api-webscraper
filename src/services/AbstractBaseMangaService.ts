@@ -1,18 +1,13 @@
-import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import INodeElement from "../design_pattern/adapter/INodeElement"
 import IExtractionRule from "../design_pattern/bridge/scraper/implementor/ExtractionRules/IExtractionRule"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import IMangaService from "../interfaces/IMangaService"
-import crypto from "crypto"
 import Manga from "../types/Manga"
 import MangaChapter from "../types/MangaChapter"
-import dotenv from "dotenv"
-dotenv.config()
 
 abstract class AbstractBaseMangaService implements IMangaService {
 	protected baseUrl: string
 	protected webScraper: IWebscraper
-	private transformKey: string = process.env.TRANSFORM_KEY!
-	private transformIV: string = process.env.TRANSFORM_IV!
 
 	/**
 	 * A record of extraction rules for various manga attributes.
@@ -28,10 +23,10 @@ abstract class AbstractBaseMangaService implements IMangaService {
 		this.webScraper = webScraper
 		// Manga list rules
 		this.mangaListRules = {
-			container: this.webScraper.createExtractionRule(
-				"container",
-				"",
-				async (el: IElementHandler) => {
+			// Default extraction rules for manga list
+			container: this.newExtractionRule({
+				name: "manga",
+				transform: async (el: INodeElement) => {
 					const titleRule = this.mangaListRules["title"]
 					const linkRule = this.mangaListRules["link"]
 					const synopsisRule = this.mangaListRules["synopsis"]
@@ -42,187 +37,104 @@ abstract class AbstractBaseMangaService implements IMangaService {
 					const viewsRule = this.mangaListRules["views"]
 					const chaptersRule = this.mangaListRules["chapters"]
 
+					const linkElement = await el.find(linkRule.selector)
+					const titleElement = await el.find(titleRule.selector)
+					const synopsisElement = await el.find(synopsisRule.selector)
+					const thumbnailElement = await el.find(thumbnailRule.selector)
+					const statusElement = await el.find(statusRule.selector)
+					const ratingElement = await el.find(ratingRule.selector)
+					const viewsElement = await el.find(viewsRule.selector)
+
 					const manga: Manga = this.createManga({
-						id: this.tranformLinkToId(
-							await linkRule.extract(await el.find(linkRule.selector))
+						link: await this.safeExtract(linkRule, linkElement),
+						title: await this.safeExtract(titleRule, titleElement),
+						synopsis: await this.safeExtract(synopsisRule, synopsisElement),
+						thumbnailUrl: await this.safeExtract(
+							thumbnailRule,
+							thumbnailElement
 						),
-						title: await titleRule.extract(await el.find(titleRule.selector)),
-						synopsis: await synopsisRule.extract(
-							await el.find(synopsisRule.selector)
-						),
-						thumbnailUrl: await thumbnailRule.extract(
-							await el.find(thumbnailRule.selector)
-						),
-						genres: genresRule.selector
-							? await Promise.all(
-									(
-										await el.findAll(genresRule.selector)
-									).map(async (genreEl) => await genresRule.extract(genreEl))
-							  )
-							: undefined,
-						status: await statusRule.extract(
-							await el.find(statusRule.selector)
-						),
-						rating: await ratingRule.extract(
-							await el.find(ratingRule.selector)
-						),
-						views: await viewsRule.extract(await el.find(viewsRule.selector)),
-						chapters: await chaptersRule.extract(
-							await el.find(chaptersRule.selector)
-						),
+						genres: await this.safeExtract(genresRule, el),
+						status: await this.safeExtract(statusRule, statusElement),
+						rating: await this.safeExtract(ratingRule, ratingElement),
+						views: await this.safeExtract(viewsRule, viewsElement),
+						chapters: await this.safeExtract(chaptersRule, el),
 					})
 
 					return manga
-				}
-			),
-			title: this.webScraper.createExtractionRule(
-				"title",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaListTitle rule not implemented.")
-				}
-			),
-			link: this.webScraper.createExtractionRule(
-				"link",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaListLink rule not implemented.")
-				}
-			),
-			synopsis: this.webScraper.createExtractionRule(
-				"synopsis",
-				"",
-				async (el: IElementHandler) => null
-			),
-			thumbnail: this.webScraper.createExtractionRule(
-				"thumbnailUrl",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaListThumbnail rule not implemented.")
-				}
-			),
-			genres: this.webScraper.createExtractionRule(
-				"genres",
-				"",
-				async (el: IElementHandler) => null
-			),
-			status: this.webScraper.createExtractionRule(
-				"status",
-				"",
-				async (el: IElementHandler) => null
-			),
-			rating: this.webScraper.createExtractionRule(
-				"rating",
-				"",
-				async (el: IElementHandler) => null
-			),
-			views: this.webScraper.createExtractionRule(
-				"views",
-				"",
-				async (el: IElementHandler) => null
-			),
-			chapters: this.webScraper.createExtractionRule(
-				"chapters",
-				"",
-				async (el: IElementHandler) => null
-			),
+				},
+			}),
+			title: this.newExtractionRule({ name: "title" }),
+			link: this.newExtractionRule({ name: "link" }),
+			synopsis: this.newExtractionRule({ name: "synopsis" }),
+			thumbnail: this.newExtractionRule({ name: "thumbnail" }),
+			genres: this.newExtractionRule({ name: "genres" }),
+			status: this.newExtractionRule({ name: "status" }),
+			rating: this.newExtractionRule({ name: "rating" }),
+			views: this.newExtractionRule({ name: "views" }),
+			chapters: this.newExtractionRule({ name: "chapters" }),
 		}
 
 		// Manga detail rules
 		this.mangaDetailRules = {
-			title: this.webScraper.createExtractionRule(
-				"title",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaDetailTitle rule not implemented.")
-				}
-			),
-			link: this.webScraper.createExtractionRule(
-				"link",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaDetailLink rule not implemented.")
-				}
-			),
-			synopsis: this.webScraper.createExtractionRule(
-				"synopsis",
-				"",
-				async (el: IElementHandler) => null
-			),
-			thumbnail: this.webScraper.createExtractionRule(
-				"thumbnailUrl",
-				"",
-				async (el: IElementHandler) => {
-					throw new Error("MangaDetailThumbnail rule not implemented.")
-				}
-			),
-			genres: this.webScraper.createExtractionRule(
-				"genres",
-				"",
-				async (el: IElementHandler) => null
-			),
-			status: this.webScraper.createExtractionRule(
-				"status",
-				"",
-				async (el: IElementHandler) => null
-			),
-			rating: this.webScraper.createExtractionRule(
-				"rating",
-				"",
-				async (el: IElementHandler) => null
-			),
-			views: this.webScraper.createExtractionRule(
-				"views",
-				"",
-				async (el: IElementHandler) => null
-			),
-			chapters: this.webScraper.createExtractionRule(
-				"chapters",
-				"",
-				async (el: IElementHandler) => null
-			),
+			// Default extraction rules for manga detail
+			title: this.newExtractionRule({ name: "title" }),
+			link: this.newExtractionRule({ name: "link" }),
+			synopsis: this.newExtractionRule({ name: "synopsis" }),
+			thumbnail: this.newExtractionRule({ name: "thumbnail" }),
+			genres: this.newExtractionRule({ name: "genres" }),
+			status: this.newExtractionRule({ name: "status" }),
+			rating: this.newExtractionRule({ name: "rating" }),
+			views: this.newExtractionRule({ name: "views" }),
+			chapters: this.newExtractionRule({ name: "chapters" }),
 		}
 	}
 
 	/**
-	 * Encrypts a given link to an ID using AES-256-CBC encryption.
+	 * Helper function to create a new extraction rule.
+	 * Creates a new extraction rule with the given parameters.
 	 *
-	 * @param {string} link - The link to be encrypted.
-	 * @returns {string} - The encrypted ID.
+	 * @param {Object} params - The parameters for creating the extraction rule.
+	 * @param {string} params.name - The name of the extraction rule.
+	 * @param {string} [params.selector] - The CSS selector for the extraction rule. Defaults to an empty string if not provided.
+	 * @param {Function} [params.transform] - The transform function to apply to the extracted element. Defaults to a function that returns undefined if not provided.
+	 * @returns {IExtractionRule} - The created extraction rule.
 	 */
-	protected tranformLinkToId(link: string): string {
-		const cipher = crypto.createCipheriv(
-			"aes-256-cbc",
-			this.transformKey,
-			this.transformIV
+	protected newExtractionRule({
+		name,
+		selector,
+		transform,
+	}: {
+		name: string
+		selector?: string
+		transform?: (el: INodeElement) => any
+	}): IExtractionRule {
+		return this.webScraper.createExtractionRule(
+			name,
+			selector ?? "",
+			transform ?? (() => undefined)
 		)
-		let encrypted = cipher.update(link, "utf8", "base64")
-		encrypted += cipher.final("base64")
-		return encrypted
 	}
 
 	/**
-	 * Decrypts a given ID back to the original link using AES-256-CBC decryption.
-	 *
-	 * @param {string} id - The encrypted ID to be decrypted.
-	 * @returns {string} - The decrypted link.
+	 * Helper function to safely extract data from an element.
+	 * Safely extracts data from an element, catching any errors that occur during extraction especially when dealing with the element.
+	 * @param rule - The extraction rule to apply to the element.
+	 * @param element - The element to extract data from.
+	 * @returns The extracted data, or `undefined` if an error occurs during extraction.
 	 */
-	protected transformIdToLink(id: string): string {
-		const decipher = crypto.createDecipheriv(
-			"aes-256-cbc",
-			this.transformKey,
-			this.transformIV
-		)
-		let decrypted = decipher.update(id, "base64", "utf8")
-		decrypted += decipher.final("utf8")
-		return decrypted
+	protected async safeExtract(
+		rule: IExtractionRule,
+		element: any
+	): Promise<any> {
+		return await rule.extract(element).catch(() => undefined)
 	}
 
 	/**
-	 * Creates a Manga object with the given parameters.
+	 * Helper function to create a Manga object.
+	 * Creates a Manga object with the given parameters. Automatically assigns null to optional parameters if not provided.
 	 *
 	 * @param {Object} params - The parameters for creating the Manga object.
-	 * @param {string} params.id - The ID of the manga. Encrypted link.
+	 * @param {string} params.link - The link to the manga.
 	 * @param {string} params.title - The title of the manga.
 	 * @param {string} [params.synopsis] - The synopsis of the manga.
 	 * @param {string} params.thumbnailUrl - The thumbnail URL of the manga.
@@ -232,32 +144,46 @@ abstract class AbstractBaseMangaService implements IMangaService {
 	 * @param {number} [params.views] - The views of the manga.
 	 * @param {MangaChapter[]} [params.chapters] - The chapters of the manga.
 	 * @returns {Manga} - The created Manga object.
+	 * @throws {Error} - Throws an error if the link or title is not provided or undefined.
 	 */
-	protected createManga(params: {
-		id: string
+	protected createManga({
+		link,
+		title,
+		synopsis,
+		thumbnailUrl,
+		genres,
+		status,
+		rating,
+		views,
+		chapters,
+	}: {
+		link: string
 		title: string
-		synopsis?: string
+		synopsis: string
 		thumbnailUrl: string
-		genres?: string[]
-		status?: string
-		rating?: number
-		views?: number
+		genres: string[]
+		status: string
+		rating: number
+		views: number
 		chapters?: MangaChapter[]
 	}): Manga {
+		if (!link) throw new Error("Cannot find manga link")
+		if (!title) throw new Error("Cannot find manga title")
 		return {
-			id: params.id,
-			title: params.title,
-			thumbnailUrl: params.thumbnailUrl,
-			synopsis: params.synopsis ?? null,
-			genres: params.genres ?? null,
-			status: params.status ?? null,
-			rating: params.rating ?? null,
-			views: params.views ?? null,
-			chapters: params.chapters ?? null,
+			link: link,
+			title: title,
+			synopsis: synopsis ?? null,
+			thumbnailUrl: thumbnailUrl ?? null,
+			genres: genres ?? null,
+			status: status ?? null,
+			rating: rating ?? null,
+			views: views ?? null,
+			chapters: chapters ?? null,
 		}
 	}
 
 	/**
+	 * Override this method to initialize the extraction rules for the manga list.
 	 * Handles the pagination for the next page of manga results.
 	 * @param query - The current query string.
 	 * @returns The query string for the next page.
@@ -265,6 +191,7 @@ abstract class AbstractBaseMangaService implements IMangaService {
 	protected abstract nextPageHandler(query: string): string
 
 	/**
+	 * Override this method to initialize the extraction rules for the manga list.
 	 * Retrieves the initial query string for fetching the latest mangas.
 	 * @returns The initial query string.
 	 */
@@ -315,12 +242,12 @@ abstract class AbstractBaseMangaService implements IMangaService {
 		while (mangaList.length < maxResults) {
 			await this.webScraper.loadPage(query)
 			const result = await this.webScraper.scrape([
-				this.mangaListRules["container"],
+				this.mangaListRules["manga"],
 			])
-			const mangas = result["container"]
+			const mangas = result["manga"]
 			mangaList.push(...mangas)
 
-			// Stop if no more manga is found including page not found
+			// Stop if no more manga is found probably including page not found
 			if (mangas.length === 0) break
 			query = this.nextPageHandler(query)
 			this.webScraper.cleanup()
@@ -328,11 +255,37 @@ abstract class AbstractBaseMangaService implements IMangaService {
 
 		return mangaList.slice(0, maxResults)
 	}
-	public async getMangaInfo(mangaId: string): Promise<Manga> {
-		throw new Error("Method not implemented.")
+
+	public async getMangaInfo(mangaLink: string): Promise<Manga> {
+		await this.webScraper.loadPage(mangaLink)
+		const result = await this.webScraper.scrape([
+			this.mangaDetailRules["title"],
+			this.mangaDetailRules["link"],
+			this.mangaDetailRules["synopsis"],
+			this.mangaDetailRules["thumbnail"],
+			this.mangaDetailRules["genres"],
+			this.mangaDetailRules["status"],
+			this.mangaDetailRules["rating"],
+			this.mangaDetailRules["views"],
+			this.mangaDetailRules["chapters"],
+		])
+
+		const manga = this.createManga({
+			link: result["link"]?.[0],
+			title: result["title"]?.[0],
+			synopsis: result["synopsis"]?.[0],
+			thumbnailUrl: result["thumbnail"]?.[0],
+			genres: result["genres"],
+			status: result["status"]?.[0],
+			rating: result["rating"]?.[0],
+			views: result["views"]?.[0],
+			chapters: result["chapters"],
+		})
+
+		return manga
 	}
 	public async getMangaChapterImages(
-		chapterId: string
+		chapterLink: string
 	): Promise<MangaChapter[]> {
 		throw new Error("Method not implemented.")
 	}

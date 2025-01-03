@@ -4,7 +4,7 @@ import { ParsedQs } from "qs"
 import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import Manga from "../types/Manga"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
-import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import INodeElement from "../design_pattern/adapter/INodeElement"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 
 class MangahubService extends AbstractBaseMangaService {
@@ -16,19 +16,21 @@ class MangahubService extends AbstractBaseMangaService {
 
 		this.mangaListRules["container"].selector = "div._1KYcM.col-sm-6.col-xs-12"
 		this.mangaListRules["title"].selector = "a[href*='/manga/']"
-		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
+		this.mangaListRules["title"].extract = async (el: INodeElement) =>
 			await el.attr("title")
 		this.mangaListRules["link"].selector = "a[href*='/manga/']"
-		this.mangaListRules["link"].extract = async (el: IElementHandler) =>
+		this.mangaListRules["link"].extract = async (el: INodeElement) =>
 			await el.attr("href")
 		this.mangaListRules["thumbnail"].selector = "div.media-left > a > img"
-		this.mangaListRules["thumbnail"].extract = async (el: IElementHandler) =>
+		this.mangaListRules["thumbnail"].extract = async (el: INodeElement) =>
 			await el.attr("src")
 		this.mangaListRules["genres"].selector = "a.label.genre-label"
-		this.mangaListRules["genres"].extract = async (el: IElementHandler) =>
-			await el.text()
+		this.mangaListRules["genres"].extract = async (el: INodeElement) => {
+			const genres = await el.findAll(this.mangaListRules["genres"].selector)
+			return Promise.all(genres.map(async (genre) => await genre.text()))
+		}
 		this.mangaListRules["status"].selector = "div.media-body span"
-		this.mangaListRules["status"].extract = async (el: IElementHandler) => {
+		this.mangaListRules["status"].extract = async (el: INodeElement) => {
 			const text = await el.text()
 			return text.match(/\(([^)]+)\)/)?.[1] || ""
 		}

@@ -1,5 +1,5 @@
 // Encapsulate the business logic and data fetching/manipulation
-import IElementHandler from "../design_pattern/adapter/IElementHandler"
+import INodeElement from "../design_pattern/adapter/INodeElement"
 import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
@@ -13,15 +13,15 @@ class NHentaiService extends AbstractBaseMangaService {
 		this.mangaListRules["container"].selector =
 			".container.index-container:not(.index-popular) > div.gallery"
 		this.mangaListRules["title"].selector = `div.gallery > a > div.caption`
-		this.mangaListRules["title"].extract = async (el: IElementHandler) =>
+		this.mangaListRules["title"].extract = async (el: INodeElement) =>
 			await el.text()
 		this.mangaListRules["link"].selector = `a[href*="/g/"]`
-		this.mangaListRules["link"].extract = async (el: IElementHandler) => {
+		this.mangaListRules["link"].extract = async (el: INodeElement) => {
 			const href = await el.attr("href")
 			return this.baseUrl + href
 		}
 		this.mangaListRules["thumbnail"].selector = `div.gallery > a > img`
-		this.mangaListRules["thumbnail"].extract = async (el: IElementHandler) =>
+		this.mangaListRules["thumbnail"].extract = async (el: INodeElement) =>
 			await el.attr("src")
 	}
 

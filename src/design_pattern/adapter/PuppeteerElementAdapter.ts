@@ -1,7 +1,7 @@
 import { ElementHandle } from "puppeteer"
-import IElementHandler from "./IElementHandler"
+import INodeElement from "./INodeElement"
 
-class PuppeteerElementAdapter implements IElementHandler {
+class PuppeteerElementAdapter implements INodeElement {
 	private element: ElementHandle
 
 	constructor(element: ElementHandle) {
@@ -19,7 +19,7 @@ class PuppeteerElementAdapter implements IElementHandler {
 		return await this.element.evaluate((el) => el.textContent || "")
 	}
 
-	public async find(selector: string): Promise<IElementHandler | null> {
+	public async find(selector: string): Promise<INodeElement | null> {
 		if (!selector) {
 			return null
 		}
@@ -30,7 +30,7 @@ class PuppeteerElementAdapter implements IElementHandler {
 		return childElement ? new PuppeteerElementAdapter(childElement) : null
 	}
 
-	public async findAll(selector: string): Promise<IElementHandler[]> {
+	public async findAll(selector: string): Promise<INodeElement[]> {
 		if (!selector) {
 			return []
 		}

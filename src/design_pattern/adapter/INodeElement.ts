@@ -3,7 +3,7 @@
  * This interface allows seamless switching between different element handlers,
  * such as Puppeteer and Cheerio.
  */
-interface IElementHandler {
+interface INodeElement {
 	/**
 	 * Retrieves the value of an attribute from the element.
 	 * @param name - The name of the attribute to retrieve.
@@ -22,16 +22,16 @@ interface IElementHandler {
 	 * @param selector - The CSS selector to match the child element.
 	 * @returns A promise that resolves to an IElementHandler for the matched element, or null if no match is found.
 	 */
-	find(selector: string): Promise<IElementHandler | null>
+	find(selector: string): Promise<INodeElement | null>
 
 	/**
 	 * Finds all child elements that match the given selector.
 	 * @param selector - The CSS selector to match the child elements.
 	 * @returns A promise that resolves to an array of IElementHandler instances for the matched elements.
 	 */
-	findAll(selector: string): Promise<IElementHandler[]>
+	findAll(selector: string): Promise<INodeElement[]>
 
 	// Add more methods as needed
 }
 
-export default IElementHandler
+export default INodeElement

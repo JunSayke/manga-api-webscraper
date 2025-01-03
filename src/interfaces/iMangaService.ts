@@ -70,18 +70,17 @@ interface IMangaService {
 
 	/**
 	 * Retrieves detailed information about a specific manga.
-	 * @param mangaId - The ID of the manga to retrieve information for.
+	 * @param mangaLink
 	 * @returns A promise that resolves to a Manga object.
 	 */
-	getMangaInfo(mangaId: string): Promise<Manga>
+	getMangaInfo(mangaLink: string): Promise<Manga>
 
 	/**
 	 * Retrieves the images for a specific manga chapter.
-	 * @param mangaId - The ID of the manga.
-	 * @param chapterId - The ID of the chapter.
+	 * @param chapterLink - The ID of the chapter.
 	 * @returns A promise that resolves to an array of MangaChapter objects.
 	 */
-	getMangaChapterImages(chapterId: string): Promise<MangaChapter[]>
+	getMangaChapterImages(chapterLink: string): Promise<MangaChapter[]>
 }
 
 export default IMangaService

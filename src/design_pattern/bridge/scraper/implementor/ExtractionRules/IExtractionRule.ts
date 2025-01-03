@@ -1,7 +1,4 @@
-import { Cheerio } from "cheerio"
-import { AnyNode } from "domhandler"
-import { ElementHandle } from "puppeteer"
-import IElementHandler from "../../../../adapter/IElementHandler"
+import INodeElement from "../../../../adapter/INodeElement"
 
 /**
  * Interface representing an extraction rule for web scraping.
@@ -20,15 +17,11 @@ interface IExtractionRule {
 	/**
 	 * Extracts data from the selected element.
 	 * @param element - The element to extract data from. This can be of various types, including:
-	 *   - `any`: A generic type for flexibility.
-	 *   - `ElementHandle`: An element handle from Puppeteer.
-	 *   - `Cheerio<AnyNode>`: A Cheerio element.
-	 *   - `IElementHandler`: A custom element handler interface.
-	 * @returns The extracted data.
+
+	 *   - `INodeElement`: A custom element handler interface.
+	 * @returns The promise resolves to the extracted data.
 	 */
-	extract(
-		element: any | ElementHandle | Cheerio<AnyNode> | IElementHandler
-	): any
+	extract(element: INodeElement): Promise<any>
 }
 
 export default IExtractionRule
