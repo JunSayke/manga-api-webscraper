@@ -1,13 +1,14 @@
 // Encapsulate the business logic and data fetching/manipulation
 import INodeElement from "../utils/design_pattern/adapter/INodeElement"
 import CheerioWebscraper from "../utils/design_pattern/bridge/scraper/implementor/CheerioWebscraper"
+import PuppeteerWebscraper from "../utils/design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
 
 class MangakakalotService extends AbstractBaseMangaService {
 	constructor(
 		url: string = "https://mangakakalot.com",
-		webscraper: IWebscraper = new CheerioWebscraper()
+		webscraper: IWebscraper = new PuppeteerWebscraper()
 	) {
 		super(url, webscraper)
 		this.initMangaListRules()
@@ -33,49 +34,44 @@ class MangakakalotService extends AbstractBaseMangaService {
 	}
 
 	private initMangaDetailRules(): void {
-		// // manga detail (md) rules
-		// const link = this.mangaDetailRules["link"]
-		// const title = this.mangaDetailRules["title"]
-		// const synopsis = this.mangaDetailRules["synopsis"]
-		// const thumbnail = this.mangaDetailRules["thumbnail"]
-		// const genres = this.mangaDetailRules["genres"]
-		// const status = this.mangaDetailRules["status"]
-		// const rating = this.mangaDetailRules["rating"]
-		// const views = this.mangaDetailRules["views"]
-		// const chapters = this.mangaDetailRules["chapters"]
-		// // manga detail (md) selectors
-		// link.selector = "a[itemprop='item'][href*='/manga/']"
-		// title.selector = "ul.manga-info-text > li > h1"
-		// synopsis.selector = "div#noidungm"
-		// thumbnail.selector = "div.manga-info-pic > img"
-		// genres.selector = "ul.manga-info-text > li:nth-child(7) > a"
-		// status.selector = "ul.manga-info-text > li:nth-child(3)"
-		// rating.selector = "em#rate_row_cmd"
-		// views.selector = "ul.manga-info-text > li:nth-child(6)"
-		// chapters.selector = "div.chapter-list > div.row"
-		// // manga detail (md) extractors
-		// link.extract = async (el: INodeElement) => await el.attr("href")
-		// title.extract = async (el: INodeElement) => await el.text()
-		// synopsis.extract = async (el: INodeElement) => await el.text()
-		// thumbnail.extract = async (el: INodeElement) => await el.attr("src")
-		// genres.extract = async (el: INodeElement) => {
-		// 	const text = await el.text()
-		// 	return text.toLowerCase()
-		// }
-		// status.extract = async (el: INodeElement) => {
-		// 	const text = await el.text()
-		// 	return text.match(/Status\s*:\s*(.*)/)?.[1].toLowerCase() || null
-		// }
-		// rating.extract = async (el: INodeElement) => {
-		// 	const text = await el.text()
-		// 	const match = text.match(/rate\s*:\s*([\d.]+)/)
-		// 	return match ? parseFloat(match[1]) : null
-		// }
-		// views.extract = async (el: INodeElement) => {
-		// 	const text = await el.text()
-		// 	const match = text.match(/View\s*:\s*([\d,]+)/)
-		// 	return match ? parseInt(match[1].replace(/,/g, "")) : null
-		// }
+		this.mdRulesConfig.link.selector = "a[itemprop='item'][href*='/manga/']"
+		this.mdRulesConfig.title.selector = "ul.manga-info-text > li > h1"
+		this.mdRulesConfig.synopsis.selector = "div#noidungm"
+		this.mdRulesConfig.thumbnail.selector = "div.manga-info-pic > img"
+		this.mdRulesConfig.genres.selector =
+			"ul.manga-info-text > li:nth-child(7) > a"
+		this.mdRulesConfig.status.selector = "ul.manga-info-text > li:nth-child(3)"
+		this.mdRulesConfig.rating.selector = "em#rate_row_cmd"
+		this.mdRulesConfig.views.selector = "ul.manga-info-text > li:nth-child(6)"
+		this.mdRulesConfig.chapters.selector = "div.chapter-list > div.row"
+
+		// manga detail (md) extractors
+		this.mdRulesConfig.link.extract = async (el: INodeElement) =>
+			await el.attr("href")
+		this.mdRulesConfig.title.extract = async (el: INodeElement) =>
+			await el.text()
+		this.mdRulesConfig.synopsis.extract = async (el: INodeElement) =>
+			await el.text()
+		this.mdRulesConfig.thumbnail.extract = async (el: INodeElement) =>
+			await el.attr("src")
+		this.mdRulesConfig.genres.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			return text.toLowerCase()
+		}
+		this.mdRulesConfig.status.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			return text.match(/Status\s*:\s*(.*)/)?.[1].toLowerCase() || null
+		}
+		this.mdRulesConfig.rating.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			const match = text.match(/rate\s*:\s*([\d.]+)/)
+			return match ? parseFloat(match[1]) : null
+		}
+		this.mdRulesConfig.views.extract = async (el: INodeElement) => {
+			const text = await el.text()
+			const match = text.match(/View\s*:\s*([\d,]+)/)
+			return match ? parseInt(match[1].replace(/,/g, "")) : null
+		}
 	}
 
 	private constructQuery(

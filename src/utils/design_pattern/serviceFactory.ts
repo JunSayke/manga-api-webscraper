@@ -6,7 +6,7 @@ import NHentaiService from "../../services/nhentaiService"
 
 const services: Record<string, IMangaService> = {
 	mangakakalot: new MangakakalotService(),
-	// mangahub: new MangahubService(),
+	mangahub: new MangahubService(),
 	// nhentai: new NHentaiService(),
 	// Add other services here
 }

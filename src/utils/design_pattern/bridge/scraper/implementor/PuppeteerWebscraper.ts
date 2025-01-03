@@ -28,12 +28,9 @@ class PuppeteerWebscraper extends AbstractBaseScraper {
 	}
 
 	public async querySelector(selector: string): Promise<ElementHandle[]> {
-		if (!this.page) {
-			throw new Error("Page not loaded. Call loadPage first.")
-		}
-
 		// Return all elements matching the selector
-		return await this.page.$$(selector)
+		// throws an error if the selector is invalid
+		return await this.page!.$$(selector).catch(() => [])
 	}
 }
 

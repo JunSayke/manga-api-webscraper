@@ -27,9 +27,9 @@ interface INodeElement {
 	/**
 	 * Finds all child elements that match the given selector.
 	 * @param selector - The CSS selector to match the child elements.
-	 * @returns A promise that resolves to an array of IElementHandler instances for the matched elements.
+	 * @returns A promise that resolves to an array of IElementHandler instances for the matched elements.  Empty array if no match is found. Null if selector is invalid.
 	 */
-	findAll(selector: string): Promise<INodeElement[]>
+	findAll(selector: string): Promise<INodeElement[] | null>
 
 	// Add more methods as needed
 }

@@ -23,10 +23,7 @@ class CheerioWebscraper extends AbstractBaseScraper {
 	public async querySelector(
 		selector: string
 	): Promise<cheerio.Cheerio<AnyNode>[]> {
-		if (!this.$) {
-			throw new Error("Page not loaded. Call loadPage first.")
-		}
-		return this.$(selector)
+		return this.$!(selector)
 			.toArray()
 			.map((el) => this.$!(el))
 	}

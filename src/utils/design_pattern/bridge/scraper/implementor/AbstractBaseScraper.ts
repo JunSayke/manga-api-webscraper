@@ -11,10 +11,11 @@ abstract class AbstractBaseScraper implements IWebscraper {
 	public abstract querySelector(selector: string): Promise<any[]>
 
 	public async scrape(
-		query: string,
-		rules: IExtractionRule[]
+		rules: IExtractionRule[],
+		query?: string
 	): Promise<Record<string, any[]>> {
-		await this.loadPage(query)
+		if (query) await this.loadPage(query)
+
 		const data: Record<string, any[]> = {}
 
 		for (const rule of rules) {
@@ -24,7 +25,7 @@ abstract class AbstractBaseScraper implements IWebscraper {
 				elements.map(async (el) => await rule.extract(this.elementAdapter(el)))
 			)
 		}
-		console.log(data)
+
 		await this.cleanup()
 		return data
 	}

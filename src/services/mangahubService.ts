@@ -14,27 +14,33 @@ class MangahubService extends AbstractBaseMangaService {
 	) {
 		super(url, webscraper)
 
-		this.mangaListRules["container"].selector = "div._1KYcM.col-sm-6.col-xs-12"
-		this.mangaListRules["title"].selector = "a[href*='/manga/']"
-		this.mangaListRules["title"].extract = async (el: INodeElement) =>
-			await el.attr("title")
-		this.mangaListRules["link"].selector = "a[href*='/manga/']"
-		this.mangaListRules["link"].extract = async (el: INodeElement) =>
+		this.initMangaListRules()
+		this.initMangaDetailRules()
+	}
+
+	private initMangaListRules(): void {
+		this.mlRulesConfig.container.selector = "div._1KYcM"
+		this.mlRulesConfig.title.selector = "h4.media-heading > a[href*='/manga/']"
+		this.mlRulesConfig.link.selector = "h4.media-heading > a[href*='/manga/']"
+		this.mlRulesConfig.thumbnail.selector = "div.media-left > a > img"
+		this.mlRulesConfig.genres.selector = "a.label.genre-label"
+		this.mlRulesConfig.status.selector = "div.media-body span:has(a)"
+
+		this.mlRulesConfig.title.extract = async (el: INodeElement) =>
+			await el.text()
+		this.mlRulesConfig.link.extract = async (el: INodeElement) =>
 			await el.attr("href")
-		this.mangaListRules["thumbnail"].selector = "div.media-left > a > img"
-		this.mangaListRules["thumbnail"].extract = async (el: INodeElement) =>
+		this.mlRulesConfig.thumbnail.extract = async (el: INodeElement) =>
 			await el.attr("src")
-		this.mangaListRules["genres"].selector = "a.label.genre-label"
-		this.mangaListRules["genres"].extract = async (el: INodeElement) => {
-			const genres = await el.findAll(this.mangaListRules["genres"].selector)
-			return Promise.all(genres.map(async (genre) => await genre.text()))
-		}
-		this.mangaListRules["status"].selector = "div.media-body span"
-		this.mangaListRules["status"].extract = async (el: INodeElement) => {
+		this.mlRulesConfig.genres.extract = async (el: INodeElement) =>
+			await el.text()
+		this.mlRulesConfig.status.extract = async (el: INodeElement) => {
 			const text = await el.text()
 			return text.match(/\(([^)]+)\)/)?.[1] || ""
 		}
 	}
+
+	private initMangaDetailRules(): void {}
 
 	private constructQuery({
 		q = "",
@@ -81,6 +87,7 @@ class MangahubService extends AbstractBaseMangaService {
 	}
 
 	protected getLatestMangasInitialQuery(): string {
+		// https://mangahub.io/updates
 		return this.constructQuery({ order: "LATEST", page: 1 })
 	}
 

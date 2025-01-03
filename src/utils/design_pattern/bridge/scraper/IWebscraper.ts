@@ -19,12 +19,20 @@ interface IWebscraper {
 	 * Select elements based on a selector.
 	 * @param selector - The CSS selector to use for selecting elements.
 	 * @returns A promise that resolves to an array of selected elements.
+	 * @throws an error if load page is not called before this method.
 	 */
-	querySelector(selector: string): Promise<any[]>
+	querySelector(selector: string): Promise<any>
 
+	/**
+	 * Scrape the page using the given rules.
+	 * @param rules - The extraction rules to apply to the page.
+	 * @param query - The URL of the page to scrape. If not provided, the current page loaded by `loadPage()` is used.
+	 * @returns A promise that resolves to the scraped data
+	 * @throws an error if current page is undefined.
+	 */
 	scrape(
-		query: string,
-		rules: IExtractionRule[]
+		rules: IExtractionRule[],
+		query?: string
 	): Promise<Record<string, any[]>>
 
 	/**

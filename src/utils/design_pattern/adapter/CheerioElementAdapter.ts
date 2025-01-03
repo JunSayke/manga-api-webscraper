@@ -24,7 +24,11 @@ class CheerioElementAdapter implements INodeElement {
 			: null
 	}
 
-	public async findAll(selector: string): Promise<INodeElement[]> {
+	public async findAll(selector: string): Promise<INodeElement[] | null> {
+		if (!selector) {
+			return null
+		}
+
 		const childElements = this.element.find(selector).toArray()
 		return childElements.map(
 			(childElement) =>

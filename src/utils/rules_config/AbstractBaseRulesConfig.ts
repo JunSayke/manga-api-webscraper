@@ -10,17 +10,26 @@ abstract class AbstractBaseRulesConfig {
 	public abstract execute(query: string): Promise<any>
 
 	/**
-	 * Helper function to safely extract data from an element.
-	 * Safely extracts data from an element, catching any errors that occur during extraction especially when dealing with the element.
-	 * @param rule - The extraction rule to apply to the element.
-	 * @param element - The element to extract data from.
-	 * @returns The extracted data, or `undefined` if an error occurs during extraction.
+	 * Helper function to safely extract data from an element or multiple elements.
+	 * Safely extracts data from an element or multiple elements, catching any errors that occur during extraction.
+	 *
+	 * @param {IExtractionRule} rule - The extraction rule to apply to the element(s).
+	 * @param {any} elements - The element or elements to extract data from. If null or not an array, the method returns undefined.
+	 * @returns {Promise<any | undefined>} - A promise that resolves to the extracted data, or undefined if an error occurs during extraction.
 	 */
 	protected async safeExtract(
 		rule: IExtractionRule,
-		element: any
-	): Promise<any> {
-		return await rule.extract(element).catch(() => undefined)
+		elements: any
+	): Promise<any | undefined> {
+		if (Array.isArray(elements)) {
+			return await Promise.all(
+				elements.map(
+					async (el) => await rule.extract(el).catch(() => undefined)
+				)
+			)
+		} else {
+			return await rule.extract(elements).catch(() => undefined)
+		}
 	}
 
 	/**
@@ -56,13 +65,13 @@ abstract class AbstractBaseRulesConfig {
 	 * @param {Object} params - The parameters for creating the Manga object.
 	 * @param {string} params.link - The link to the manga.
 	 * @param {string} params.title - The title of the manga.
-	 * @param {string} [params.synopsis] - The synopsis of the manga.
-	 * @param {string} params.thumbnailUrl - The thumbnail URL of the manga.
-	 * @param {string[]} [params.genres] - The genres of the manga.
-	 * @param {string} [params.status] - The status of the manga.
-	 * @param {number} [params.rating] - The rating of the manga.
-	 * @param {number} [params.views] - The views of the manga.
-	 * @param {MangaChapter[]} [params.chapters] - The chapters of the manga.
+	 * @param {string} [params.synopsis] - (Optional) The synopsis of the manga. Defaults to null if not provided.
+	 * @param {string} params.thumbnailUrl - (Optional) The thumbnail URL of the manga. Defaults to null if not provided.
+	 * @param {string[]} [params.genres] - (Optional) The genres of the manga. Defaults to null if not provided.
+	 * @param {string} [params.status] - (Optional) The status of the manga. Defaults to null if not provided.
+	 * @param {number} [params.rating] - (Optional) The rating of the manga. Defaults to null if not provided.
+	 * @param {number} [params.views] - (Optional) The views of the manga. Defaults to null if not provided.
+	 * @param {MangaChapter[]} [params.chapters] - (Optional) The chapters of the manga. Defaults to null if not provided.
 	 * @returns {Manga} - The created Manga object.
 	 * @throws {Error} - Throws an error if the link or title is not provided or undefined.
 	 */
@@ -79,12 +88,12 @@ abstract class AbstractBaseRulesConfig {
 	}: {
 		link: string
 		title: string
-		synopsis: string
-		thumbnailUrl: string
-		genres: string[]
-		status: string
-		rating: number
-		views: number
+		synopsis?: string
+		thumbnailUrl?: string
+		genres?: string[]
+		status?: string
+		rating?: number
+		views?: number
 		chapters?: MangaChapter[]
 	}): Manga {
 		if (!link) throw new Error("Cannot find manga link")

@@ -25,14 +25,13 @@ class PuppeteerElementAdapter implements INodeElement {
 		}
 
 		const childElement = await this.element.$(selector)
-		console.log(selector, childElement)
 
 		return childElement ? new PuppeteerElementAdapter(childElement) : null
 	}
 
-	public async findAll(selector: string): Promise<INodeElement[]> {
+	public async findAll(selector: string): Promise<INodeElement[] | null> {
 		if (!selector) {
-			return []
+			return null
 		}
 
 		const childElements = await this.element.$$(selector)
