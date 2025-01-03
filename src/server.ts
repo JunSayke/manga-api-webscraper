@@ -1,4 +1,4 @@
-import BrowserManager from "./manager/browserManager"
+import BrowserManager from "./utils/manager/browserManager"
 import app from "./app"
 
 const port = process.env.PORT || 3000

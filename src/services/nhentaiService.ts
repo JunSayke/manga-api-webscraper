@@ -1,7 +1,7 @@
 // Encapsulate the business logic and data fetching/manipulation
-import INodeElement from "../design_pattern/adapter/INodeElement"
-import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
-import PuppeteerWebscraper from "../design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
+import INodeElement from "../utils/design_pattern/adapter/INodeElement"
+import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
+import PuppeteerWebscraper from "../utils/design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import AbstractBaseMangaService from "./AbstractBaseMangaService"
 
 class NHentaiService extends AbstractBaseMangaService {

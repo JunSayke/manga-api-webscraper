@@ -1,12 +1,12 @@
-import IMangaService from "../interfaces/IMangaService"
-import MangahubService from "../services/mangahubService"
-import MangakakalotService from "../services/mangakakalotService"
-import NHentaiService from "../services/nhentaiService"
+import IMangaService from "../../interfaces/IMangaService"
+import MangahubService from "../../services/mangahubService"
+import MangakakalotService from "../../services/mangakakalotService"
+import NHentaiService from "../../services/nhentaiService"
 // Import other services as needed
 
 const services: Record<string, IMangaService> = {
 	mangakakalot: new MangakakalotService(),
-	mangahub: new MangahubService(),
+	// mangahub: new MangahubService(),
 	// nhentai: new NHentaiService(),
 	// Add other services here
 }

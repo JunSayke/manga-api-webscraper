@@ -1,10 +1,7 @@
-import { ElementHandle } from "puppeteer"
 import INodeElement from "../../../adapter/INodeElement"
 import IWebscraper from "../IWebscraper"
 import BaseExtractionRule from "./ExtractionRules/BaseExtractionRule"
 import IExtractionRule from "./ExtractionRules/IExtractionRule"
-import { Cheerio } from "cheerio"
-import { AnyNode } from "domhandler"
 
 abstract class AbstractBaseScraper implements IWebscraper {
 	public abstract elementAdapter: (element: any) => INodeElement
@@ -14,18 +11,21 @@ abstract class AbstractBaseScraper implements IWebscraper {
 	public abstract querySelector(selector: string): Promise<any[]>
 
 	public async scrape(
-		rules: IExtractionRule[],
-		element?: INodeElement
+		query: string,
+		rules: IExtractionRule[]
 	): Promise<Record<string, any[]>> {
+		await this.loadPage(query)
 		const data: Record<string, any[]> = {}
 
 		for (const rule of rules) {
 			const elements = await this.querySelector(rule.selector)
+
 			data[rule.name] = await Promise.all(
 				elements.map(async (el) => await rule.extract(this.elementAdapter(el)))
 			)
 		}
-
+		console.log(data)
+		await this.cleanup()
 		return data
 	}
 

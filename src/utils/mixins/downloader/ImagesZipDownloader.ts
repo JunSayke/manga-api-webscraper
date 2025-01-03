@@ -1,5 +1,5 @@
 import AdmZip from "adm-zip"
-import IDownloader from "../../interfaces/IDownloader"
+import IDownloader from "../../../interfaces/IDownloader"
 
 class ImagesZipDownloader implements IDownloader {
 	public download(urls: string[]): Promise<any> {
