@@ -1,4 +1,4 @@
-import INodeElement from "../../../../adapter/INodeElement"
+import INodeElement from "../../../adapter/INodeElement"
 import IExtractionRule from "./IExtractionRule"
 
 class BaseExtractionRule implements IExtractionRule {

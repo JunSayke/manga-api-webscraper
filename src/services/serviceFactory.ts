@@ -1,19 +1,20 @@
-import IMangaService from "../../interfaces/IMangaService"
-import MangahubService from "../../services/mangahubService"
-import MangakakalotService from "../../services/mangakakalotService"
-import NHentaiService from "../../services/nhentaiService"
+import IMangaService from "../interfaces/IMangaService"
+import MangahubService from "./MangahubService"
+import MangakakalotService from "./MangakakalotService"
+import NHentaiService from "./NHentaiService"
 // Import other services as needed
 
 const services: Record<string, IMangaService> = {
 	mangakakalot: new MangakakalotService(),
 	mangahub: new MangahubService(),
-	// nhentai: new NHentaiService(),
+	nhentai: new NHentaiService(),
 	// Add other services here
 }
 
 const domainToServiceMap: Record<string, string> = {
 	"mangakakalot.com": "mangakakalot",
 	"mangahub.io": "mangahub",
+	"nhentai.net": "nhentai",
 	// Add other domain mappings here
 }
 

@@ -1,12 +1,28 @@
-import INodeElement from "../design_pattern/adapter/INodeElement"
-import IExtractionRule from "../design_pattern/bridge/scraper/implementor/ExtractionRules/IExtractionRule"
-import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
 import Manga from "../../types/Manga"
 import MangaChapter from "../../types/MangaChapter"
+import INodeElement from "../adapter/INodeElement"
+import IExtractionRule from "../scraper/implementor/ExtractionRules/IExtractionRule"
+import IWebscraper from "../scraper/IWebscraper"
 
-abstract class AbstractBaseRulesConfig {
+/**
+ * Abstract class for configuring extraction rules.
+ *
+ * This class provides the foundation for defining extraction rules for various manga attributes.
+ * Subclasses should implement the specific extraction logic by defining the rules and implementing the execute method.
+ */
+abstract class AbstractRulesConfig {
 	constructor(protected webscraper: IWebscraper) {}
 
+	/**
+	 * Executes the extraction process for the given query.
+	 *
+	 * This method should be implemented by subclasses to define the specific extraction logic.
+	 * It uses the provided query to scrape data from the web and returns the extracted data.
+	 *
+	 * @param {string} query - The query string to use for extracting data.
+	 * @returns {Promise<any>} - A promise that resolves to the extracted data.
+	 * @throws {Error} - Throws an error if the extraction process fails.
+	 */
 	public abstract execute(query: string): Promise<any>
 
 	/**
@@ -14,21 +30,19 @@ abstract class AbstractBaseRulesConfig {
 	 * Safely extracts data from an element or multiple elements, catching any errors that occur during extraction.
 	 *
 	 * @param {IExtractionRule} rule - The extraction rule to apply to the element(s).
-	 * @param {any} elements - The element or elements to extract data from. If null or not an array, the method returns undefined.
+	 * @param {any} source - The source to extract data from. If null or not an array, the method returns undefined.
 	 * @returns {Promise<any | undefined>} - A promise that resolves to the extracted data, or undefined if an error occurs during extraction.
 	 */
 	protected async safeExtract(
 		rule: IExtractionRule,
-		elements: any
+		source: any
 	): Promise<any | undefined> {
-		if (Array.isArray(elements)) {
+		if (Array.isArray(source)) {
 			return await Promise.all(
-				elements.map(
-					async (el) => await rule.extract(el).catch(() => undefined)
-				)
+				source.map(async (el) => await rule.extract(el).catch(() => undefined))
 			)
 		} else {
-			return await rule.extract(elements).catch(() => undefined)
+			return await rule.extract(source).catch(() => undefined)
 		}
 	}
 
@@ -112,4 +126,4 @@ abstract class AbstractBaseRulesConfig {
 	}
 }
 
-export default AbstractBaseRulesConfig
+export default AbstractRulesConfig

@@ -1,27 +1,33 @@
 // Encapsulate the business logic and data fetching/manipulation
-import INodeElement from "../utils/design_pattern/adapter/INodeElement"
-import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
-import PuppeteerWebscraper from "../utils/design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
-import AbstractBaseMangaService from "./AbstractBaseMangaService"
+import INodeElement from "../utils/adapter/INodeElement"
+import PuppeteerWebscraper from "../utils/scraper/implementor/PuppeteerWebscraper"
+import IWebscraper from "../utils/scraper/IWebscraper"
+import AbstractMangaService from "./AbstractMangaService"
 
-class NHentaiService extends AbstractBaseMangaService {
+class NHentaiService extends AbstractMangaService {
 	constructor(
 		url: string = "https://nhentai.net",
 		webscraper: IWebscraper = new PuppeteerWebscraper()
 	) {
 		super(url, webscraper)
-		this.mangaListRules["container"].selector =
+		this.initMangaListRules()
+	}
+
+	private initMangaListRules() {
+		this.mlRulesConfig.container.selector =
 			".container.index-container:not(.index-popular) > div.gallery"
-		this.mangaListRules["title"].selector = `div.gallery > a > div.caption`
-		this.mangaListRules["title"].extract = async (el: INodeElement) =>
+		this.mlRulesConfig.title.selector = `div.gallery > a > div.caption`
+		this.mlRulesConfig.link.selector = `a[href*="/g/"]`
+		// How to get the thumbnail out of this data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7?
+		this.mlRulesConfig.thumbnail.selector = `div.gallery > a > img`
+
+		this.mlRulesConfig.title.extract = async (el: INodeElement) =>
 			await el.text()
-		this.mangaListRules["link"].selector = `a[href*="/g/"]`
-		this.mangaListRules["link"].extract = async (el: INodeElement) => {
+		this.mlRulesConfig.link.extract = async (el: INodeElement) => {
 			const href = await el.attr("href")
 			return this.baseUrl + href
 		}
-		this.mangaListRules["thumbnail"].selector = `div.gallery > a > img`
-		this.mangaListRules["thumbnail"].extract = async (el: INodeElement) =>
+		this.mlRulesConfig.thumbnail.extract = async (el: INodeElement) =>
 			await el.attr("src")
 	}
 

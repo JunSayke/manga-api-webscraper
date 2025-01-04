@@ -1,4 +1,4 @@
-import INodeElement from "../../../../adapter/INodeElement"
+import INodeElement from "../../../adapter/INodeElement"
 
 /**
  * Interface representing an extraction rule for web scraping.

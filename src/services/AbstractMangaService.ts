@@ -1,27 +1,34 @@
 import IMangaService from "../interfaces/IMangaService"
 import Manga from "../types/Manga"
 import MangaChapter from "../types/MangaChapter"
-import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
-import BaseMangaDetailRulesConfig from "../utils/rules_config/BaseMangaDetailRulesConfig"
-import BaseMangaListRulesConfig from "../utils/rules_config/BaseMangaListRulesConfig"
+import IWebscraper from "../utils/scraper/IWebscraper"
+import BaseMDRulesConfig from "../utils/rules_config/BaseMDRulesConfig"
+import BaseMLRulesConfig from "../utils/rules_config/BaseMLRulesConfig"
 
-abstract class AbstractBaseMangaService implements IMangaService {
+/**
+ * Abstract base class for manga services.
+ *
+ * This class implements the IMangaService interface and provides common functionality
+ * for various manga services. Subclasses should implement the specific logic for
+ * interacting with different manga sources by defining the required methods.
+ */
+abstract class AbstractMangaService implements IMangaService {
 	protected baseUrl: string
 	protected webscraper: IWebscraper
 
 	// (ml) Manga List
-	protected mlRulesConfig: BaseMangaListRulesConfig
+	protected mlRulesConfig: BaseMLRulesConfig
 
 	// (md) Manga Detail
-	protected mdRulesConfig: BaseMangaDetailRulesConfig
+	protected mdRulesConfig: BaseMDRulesConfig
 
 	// protected mangaDetailRules: Record<string, IExtractionRule>
 
 	constructor(baseUrl: string, webScraper: IWebscraper) {
 		this.baseUrl = baseUrl
 		this.webscraper = webScraper
-		this.mlRulesConfig = new BaseMangaListRulesConfig(this.webscraper)
-		this.mdRulesConfig = new BaseMangaDetailRulesConfig(this.webscraper)
+		this.mlRulesConfig = new BaseMLRulesConfig(this.webscraper)
+		this.mdRulesConfig = new BaseMDRulesConfig(this.webscraper)
 	}
 
 	/**
@@ -105,4 +112,4 @@ abstract class AbstractBaseMangaService implements IMangaService {
 	}
 }
 
-export default AbstractBaseMangaService
+export default AbstractMangaService

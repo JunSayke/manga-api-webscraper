@@ -1,10 +1,17 @@
-import INodeElement from "../design_pattern/adapter/INodeElement"
-import IExtractionRule from "../design_pattern/bridge/scraper/implementor/ExtractionRules/IExtractionRule"
-import IWebscraper from "../design_pattern/bridge/scraper/IWebscraper"
+import INodeElement from "../adapter/INodeElement"
+import IExtractionRule from "../scraper/implementor/ExtractionRules/IExtractionRule"
+import IWebscraper from "../scraper/IWebscraper"
 import Manga from "../../types/Manga"
-import AbstractBaseRulesConfig from "./AbstractBaseRulesConfig"
+import AbstractRulesConfig from "./AbstractRulesConfig"
 
-class BaseMangaListRulesConfig extends AbstractBaseRulesConfig {
+/**
+ * Configuration class for extracting manga list information.
+ *
+ * This class extends the AbstractRulesConfig class and defines the extraction rules
+ * for various manga attributes such as title, link, thumbnail, genres, status, rating, views, and chapters.
+ * It also defines the container rule for extracting manga information from a list.
+ */
+class BaseMLRulesConfig extends AbstractRulesConfig {
 	public title: IExtractionRule = this.newExtractionRule({ name: "title" })
 	public link: IExtractionRule = this.newExtractionRule({ name: "link" })
 	public synopsis: IExtractionRule = this.newExtractionRule({
@@ -71,4 +78,4 @@ class BaseMangaListRulesConfig extends AbstractBaseRulesConfig {
 	}
 }
 
-export default BaseMangaListRulesConfig
+export default BaseMLRulesConfig

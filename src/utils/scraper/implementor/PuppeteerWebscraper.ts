@@ -1,8 +1,8 @@
 import { ElementHandle, Page } from "puppeteer"
-import BrowserManager from "../../../../manager/browserManager"
-import { PageManager } from "../../../../manager/browserPageManager"
-import PuppeteerElementAdapter from "../../../adapter/PuppeteerElementAdapter"
 import AbstractBaseScraper from "./AbstractBaseScraper"
+import PuppeteerElementAdapter from "../../adapter/PuppeteerElementAdapter"
+import BrowserManager from "../../manager/browserManager"
+import { PageManager } from "../../manager/browserPageManager"
 
 class PuppeteerWebscraper extends AbstractBaseScraper {
 	private page: Page | null = null

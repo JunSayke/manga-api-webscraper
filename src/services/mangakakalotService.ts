@@ -1,11 +1,10 @@
 // Encapsulate the business logic and data fetching/manipulation
-import INodeElement from "../utils/design_pattern/adapter/INodeElement"
-import CheerioWebscraper from "../utils/design_pattern/bridge/scraper/implementor/CheerioWebscraper"
-import PuppeteerWebscraper from "../utils/design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
-import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
-import AbstractBaseMangaService from "./AbstractBaseMangaService"
+import INodeElement from "../utils/adapter/INodeElement"
+import PuppeteerWebscraper from "../utils/scraper/implementor/PuppeteerWebscraper"
+import IWebscraper from "../utils/scraper/IWebscraper"
+import AbstractMangaService from "./AbstractMangaService"
 
-class MangakakalotService extends AbstractBaseMangaService {
+class MangakakalotService extends AbstractMangaService {
 	constructor(
 		url: string = "https://mangakakalot.com",
 		webscraper: IWebscraper = new PuppeteerWebscraper()

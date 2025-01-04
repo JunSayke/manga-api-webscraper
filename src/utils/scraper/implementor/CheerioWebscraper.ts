@@ -2,7 +2,7 @@ import axios from "axios"
 import * as cheerio from "cheerio"
 import { Cheerio } from "cheerio"
 import { AnyNode } from "domhandler"
-import CheerioElementAdapter from "../../../adapter/CheerioElementAdapter"
+import CheerioElementAdapter from "../../../../adapter/CheerioElementAdapter"
 import AbstractBaseScraper from "./AbstractBaseScraper"
 
 class CheerioWebscraper extends AbstractBaseScraper {

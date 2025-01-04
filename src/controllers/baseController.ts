@@ -3,7 +3,7 @@ import { Request, Response } from "express"
 import {
 	getServiceNameFromDomain,
 	serviceFactory,
-} from "../utils/design_pattern/serviceFactory"
+} from "../services/serviceFactory"
 import { URL } from "url"
 
 // TODO: Error handling

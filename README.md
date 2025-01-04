@@ -4,6 +4,8 @@ This project is a web scraper for fetching manga details, chapter lists, and ima
 
 ## Project Structure
 
+Still in progress
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
@@ -37,6 +39,8 @@ This project is a web scraper for fetching manga details, chapter lists, and ima
 
 ## API Endpoints
 
+Still in progress
+
 ## Contribution Guidelines
 
 To contribute to this project, follow these steps:
@@ -60,8 +64,17 @@ To contribute to this project, follow these steps:
 
 4. Implement your changes:
 
-   Create a new scraper class in the services directory by extending the MangaScraper abstract class.
-   Implement the required methods.
+   - Adding new serivce:
+     Create a new service class in the services directory by extending the AbstractMangaService class.
+     Implement the required methods. Refactor serviceFactory.ts accordingly.
+
+   - Improving README.md:
+     Help me
+
+   - Open for improvements:
+     ```sh
+        cd utils
+     ```
 
 5. Push your changes to your forked repository:
 

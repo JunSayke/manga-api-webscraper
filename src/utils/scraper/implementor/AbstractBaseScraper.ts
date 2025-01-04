@@ -1,4 +1,4 @@
-import INodeElement from "../../../adapter/INodeElement"
+import INodeElement from "../../adapter/INodeElement"
 import IWebscraper from "../IWebscraper"
 import BaseExtractionRule from "./ExtractionRules/BaseExtractionRule"
 import IExtractionRule from "./ExtractionRules/IExtractionRule"

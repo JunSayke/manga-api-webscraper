@@ -1,13 +1,11 @@
 // Encapsulate the business logic and data fetching/manipulation
-import { ElementHandle } from "puppeteer"
-import { ParsedQs } from "qs"
-import PuppeteerWebscraper from "../utils/design_pattern/bridge/scraper/implementor/PuppeteerWebscraper"
 import Manga from "../types/Manga"
-import AbstractBaseMangaService from "./AbstractBaseMangaService"
-import INodeElement from "../utils/design_pattern/adapter/INodeElement"
-import IWebscraper from "../utils/design_pattern/bridge/scraper/IWebscraper"
+import INodeElement from "../utils/adapter/INodeElement"
+import PuppeteerWebscraper from "../utils/scraper/implementor/PuppeteerWebscraper"
+import IWebscraper from "../utils/scraper/IWebscraper"
+import AbstractMangaService from "./AbstractMangaService"
 
-class MangahubService extends AbstractBaseMangaService {
+class MangahubService extends AbstractMangaService {
 	constructor(
 		url: string = "https://mangahub.io",
 		webscraper: IWebscraper = new PuppeteerWebscraper()
