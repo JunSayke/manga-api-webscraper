@@ -6,6 +6,24 @@ This project is a web scraper for fetching manga details, chapter lists, and ima
 
 Still in progress
 
+```bash
+├───controllers
+├───interfaces
+├───middlewares
+├───routes
+├───services
+├───types
+└───utils
+    ├───adapter
+    ├───manager
+    ├───mixins
+    │   └───downloader
+    ├───rules_config
+    └───scraper
+        └───implementor
+            └───ExtractionRules
+```
+
 ## Prerequisites
 
 - Node.js (v14 or higher)
@@ -26,15 +44,10 @@ Still in progress
    npm install
    ```
 
-3. **Compile the TypeScript code**
+3. **Run the server in development**
 
    ```sh
-   npm run build
-   ```
-
-4. **Run the server**
-   ```sh
-   npm start
+   npm run dev
    ```
 
 ## API Endpoints
@@ -64,17 +77,13 @@ To contribute to this project, follow these steps:
 
 4. Implement your changes:
 
-   - Adding new serivce:
+   - Adding new service:
      Create a new service class in the services directory by extending the AbstractMangaService class.
-     Implement the required methods. Refactor serviceFactory.ts accordingly.
+     Implement the required methods. Refactor serviceFactory.ts accordingly. Each services are open for changes.
 
-   - Improving README.md:
-     Help me
+   - Under utils directory are open for improvements.
 
-   - Open for improvements:
-     ```sh
-        cd utils
-     ```
+   - Improving README.md: How to improve this? HELP ME! T-T
 
 5. Push your changes to your forked repository:
 
